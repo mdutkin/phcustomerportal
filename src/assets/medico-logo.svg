@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" role="img" aria-label="Medico Pharmacy">
+  <title>Medico Pharmacy</title>
+  <defs>
+    <linearGradient id="medicoCross" gradientUnits="userSpaceOnUse" x1="299" y1="18" x2="235" y2="82">
+      <stop offset="0%" stop-color="#B6CE17"></stop>
+      <stop offset="50%" stop-color="#119EB7"></stop>
+      <stop offset="100%" stop-color="#6DB64B"></stop>
+    </linearGradient>
+  </defs>
+  <text x="4" y="62" font-family="Inter, system-ui, -apple-system, &#39;Segoe UI&#39;, sans-serif" font-weight="700" font-size="58" fill="#14439A" letter-spacing="-0.5">Medico</text>
+  <text x="80" y="88" font-family="Inter, system-ui, -apple-system, &#39;Segoe UI&#39;, sans-serif" font-weight="500" font-size="20" fill="#808080" letter-spacing="3">Pharmacy</text>
+  <g aria-hidden="true">
+    <rect x="257.75" y="15" width="24.5" height="70" rx="12.25" fill="url(#medicoCross)"></rect>
+    <rect x="235" y="37.75" width="70" height="24.5" rx="12.25" fill="url(#medicoCross)"></rect>
+  </g>
+</svg>

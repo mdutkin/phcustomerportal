@@ -1,0 +1,227 @@
+/* =========================================================================
+   Medico Pharmacy — Foundation Tokens
+   Light theme only (v1). Cool slate neutrals, deep brand blue.
+   Ported verbatim from the design handoff (design-system/colors_and_type.css).
+   ========================================================================= */
+
+/* ---------- Inter (self-hosted, brand-supplied) ---------- */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../assets/fonts/Inter-VariableFont_opsz_wght.ttf") format("truetype-variations"),
+       url("../assets/fonts/Inter-VariableFont_opsz_wght.ttf") format("truetype");
+  font-variation-settings: "opsz" 16;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../assets/fonts/Inter-Italic-VariableFont_opsz_wght.ttf") format("truetype-variations"),
+       url("../assets/fonts/Inter-Italic-VariableFont_opsz_wght.ttf") format("truetype");
+  font-variation-settings: "opsz" 16;
+}
+
+:root {
+  /* ---------- Brand ---------- */
+  --brand-primary:        #14439A;
+  --brand-primary-hover:  #103678;
+  --brand-primary-active: #0C2A5C;
+  --brand-tint:           #E5EBF7;
+  --brand-tint-strong:    #C7D3EE;
+  --brand-on-primary:     #FFFFFF;
+  --brand-surface:        #EEF2FB;
+  --brand-on-tint:        var(--brand-primary-hover);
+
+  /* Logo cross gradient stops (ONLY on the logo mark) */
+  --brand-cross-1: #B6CE17;
+  --brand-cross-2: #119EB7;
+  --brand-cross-3: #6DB64B;
+  --brand-subtitle: #808080;
+
+  /* ---------- Neutrals (cool slate) ---------- */
+  --slate-50:  #F8FAFC;
+  --slate-100: #F1F5F9;
+  --slate-200: #E2E8F0;
+  --slate-300: #CBD5E1;
+  --slate-400: #94A3B8;
+  --slate-500: #64748B;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1E293B;
+  --slate-900: #0F172A;
+
+  /* ---------- Surfaces ---------- */
+  --surface-page:    var(--slate-50);
+  --surface-card:    #FFFFFF;
+  --surface-raised:  #FFFFFF;
+  --surface-sunken:  var(--slate-100);
+  --bg-app:          var(--slate-50);
+
+  /* ---------- Foreground roles ---------- */
+  --fg-1: var(--slate-900);
+  --fg-2: var(--slate-700);
+  --fg-3: var(--slate-500);
+  --fg-4: var(--slate-400);
+  --fg-link: var(--brand-primary);
+  --fg-on-primary: #FFFFFF;
+
+  /* ---------- Borders ---------- */
+  --border-subtle: var(--slate-200);
+  --border-default: var(--slate-200);
+  --border-strong: var(--slate-300);
+  --border-focus:  var(--brand-primary);
+  --border-width: 1px;
+
+  /* ---------- Semantic colors ---------- */
+  --success-700: #15803D;
+  --success-600: #16A34A;
+  --success-500: #22C55E;
+  --success-50:  #F0FDF4;
+  --success-bg:  #DCFCE7;
+
+  --warning-700: #B45309;
+  --warning-600: #D97706;
+  --warning-500: #F59E0B;
+  --warning-50:  #FFFBEB;
+  --warning-bg:  #FEF3C7;
+
+  --danger-700:  #B91C1C;
+  --danger-600:  #DC2626;
+  --danger-500:  #EF4444;
+  --danger-50:   #FEF2F2;
+  --danger-bg:   #FEE2E2;
+
+  --info-700:    #1D4ED8;
+  --info-600:    #2563EB;
+  --info-500:    #3B82F6;
+  --info-50:     #EFF6FF;
+  --info-bg:     #DBEAFE;
+
+  /* ---------- Spacing ---------- */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ---------- Radii ---------- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 9999px;
+
+  /* ---------- Elevation ---------- */
+  --shadow-none:  none;
+  --shadow-xs:    0 1px 1px rgba(15, 23, 42, 0.04);
+  --shadow-sm:    0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.03);
+  --shadow-md:    0 4px 8px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg:    0 12px 24px -8px rgba(15, 23, 42, 0.10), 0 4px 8px -4px rgba(15, 23, 42, 0.04);
+  --shadow-focus: 0 0 0 3px rgba(20, 67, 154, 0.30);
+
+  /* ---------- Type ---------- */
+  --font-sans: "Inter", system-ui, -apple-system, "San Francisco",
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Menlo", "Cascadia Mono",
+               "Roboto Mono", Consolas, monospace;
+  --font-numeric-tabular: "tnum" 1, "lnum" 1;
+
+  --text-display:    34px;
+  --text-h1:         28px;
+  --text-h2:         22px;
+  --text-h3:         18px;
+  --text-body-lg:    17px;
+  --text-body:       16px;
+  --text-body-sm:    14px;
+  --text-caption:    13px;
+  --text-overline:   12px;
+
+  --leading-tight: 1.2;
+  --leading-snug:  1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.6;
+
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold: 600;
+  --weight-bold:    700;
+
+  /* ---------- Motion ---------- */
+  --duration-fast:  120ms;
+  --duration-base:  180ms;
+  --duration-slow:  260ms;
+  --ease-standard:  cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ---------- Touch ---------- */
+  --hit-mobile: 44px;
+  --hit-web:    40px;
+
+  /* ---------- Layout ---------- */
+  --container-max: 1200px;
+  --nav-height-web: 56px;
+  --nav-height-mobile: 56px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}
+
+/* =========================================================================
+   Semantic typography classes
+   ========================================================================= */
+
+html, body {
+  font-family: var(--font-sans);
+  color: var(--fg-2);
+  background: var(--surface-page);
+  font-size: 16px;
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body { margin: 0; }
+
+.display { font-size: var(--text-display); line-height: var(--leading-tight); font-weight: var(--weight-bold); letter-spacing: -0.01em; color: var(--fg-1); }
+.h1      { font-size: var(--text-h1);      line-height: var(--leading-tight); font-weight: var(--weight-bold); letter-spacing: -0.01em; color: var(--fg-1); }
+.h2      { font-size: var(--text-h2);      line-height: var(--leading-snug);  font-weight: var(--weight-semibold); color: var(--fg-1); }
+.h3      { font-size: var(--text-h3);      line-height: var(--leading-snug);  font-weight: var(--weight-semibold); color: var(--fg-1); }
+.body-lg { font-size: var(--text-body-lg); line-height: var(--leading-normal); font-weight: var(--weight-regular); color: var(--fg-2); }
+.body    { font-size: var(--text-body);    line-height: var(--leading-normal); font-weight: var(--weight-regular); color: var(--fg-2); }
+.body-sm { font-size: var(--text-body-sm); line-height: var(--leading-normal); font-weight: var(--weight-regular); color: var(--fg-3); }
+.caption { font-size: var(--text-caption); line-height: var(--leading-snug);  font-weight: var(--weight-medium); color: var(--fg-3); }
+.overline {
+  font-size: var(--text-overline);
+  line-height: var(--leading-snug);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

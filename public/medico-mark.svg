@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Medico Pharmacy mark">
+  <title>Medico Pharmacy</title>
+  <defs>
+    <linearGradient id="medicoCrossMark" gradientUnits="userSpaceOnUse" x1="86" y1="14" x2="14" y2="86">
+      <stop offset="0%" stop-color="#B6CE17"></stop>
+      <stop offset="50%" stop-color="#119EB7"></stop>
+      <stop offset="100%" stop-color="#6DB64B"></stop>
+    </linearGradient>
+  </defs>
+  <g aria-hidden="true">
+    <rect x="37.75" y="10" width="24.5" height="80" rx="12.25" fill="url(#medicoCrossMark)"></rect>
+    <rect x="10" y="37.75" width="80" height="24.5" rx="12.25" fill="url(#medicoCrossMark)"></rect>
+  </g>
+</svg>
