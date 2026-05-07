@@ -947,3 +947,237 @@ a { color: inherit; }
   font: 400 14px/1 var(--font-sans); color: var(--fg-1);
 }
 .search-input input::placeholder { color: var(--fg-4); }
+
+/* ===================== Mobile bottom tab bar ===================== */
+.mobile-tabbar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 60;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border-default);
+  padding: 6px 4px calc(8px + env(safe-area-inset-bottom));
+  justify-content: space-around;
+  align-items: stretch;
+  gap: 2px;
+}
+.mobile-tab {
+  flex: 1;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--fg-3);
+  font: 600 11px/1 var(--font-sans);
+  letter-spacing: 0.01em;
+  transition: color var(--duration-fast) var(--ease-standard),
+              background var(--duration-fast) var(--ease-standard);
+  min-height: 48px;
+}
+.mobile-tab .lu { width: 22px; height: 22px; }
+.mobile-tab:hover { color: var(--fg-2); }
+.mobile-tab.active { color: var(--brand-primary); }
+.mobile-tab.active .lu { color: var(--brand-primary); }
+
+/* ===================== Mobile breakpoint (≤640px) ===================== */
+@media (max-width: 640px) {
+  /* Show bottom tab bar */
+  .mobile-tabbar { display: flex; }
+
+  /* TopNav: collapse tab strip, keep brand + nav-right */
+  .topnav {
+    height: 56px;
+    padding: 0 14px;
+    gap: 12px;
+  }
+  .topnav .tabs { display: none; }
+  .topnav .nav-right { gap: 4px; margin-left: auto; }
+  .topnav .icon-btn { width: 36px; height: 36px; }
+  .topnav .brand-logo { height: 26px; }
+
+  /* Page padding — leave room for the bottom tab bar */
+  .page {
+    padding: 16px 14px calc(96px + env(safe-area-inset-bottom));
+  }
+  [data-density="cozy"] .page {
+    padding: 14px 14px calc(96px + env(safe-area-inset-bottom));
+  }
+
+  /* PageHeader: stack action below title */
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .page-title { font-size: 22px; }
+  .page-sub { font-size: 14px; }
+
+  /* Banners */
+  .banner { padding: 12px 14px; font-size: 13px; gap: 10px; }
+  .banner-icon { width: 28px; height: 28px; flex: 0 0 28px; }
+
+  /* Stats — single column on phones */
+  .stat-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat { padding: 14px; }
+  .stat-num { font-size: 22px; }
+
+  /* Two-column layouts already collapse at 980/980 — tighten gap */
+  .cols, .cols-1-2, .detail-grid { gap: 12px; }
+  .col-stack { gap: 12px; }
+
+  /* Action grid (Dashboard B) */
+  .action-grid { grid-template-columns: 1fr; gap: 10px; }
+  .action-tile { padding: 14px; gap: 12px; }
+
+  /* Hero card */
+  .hero-card { padding: 18px 18px; border-radius: var(--radius-md); }
+  .hero-card .hero-title { font-size: 18px; }
+  .hero-card .hero-sub { font-size: 13px; }
+  .hero-actions { flex-direction: column; gap: 8px; }
+  .hero-actions .btn { width: 100%; }
+
+  /* List rows: tighter padding */
+  .list-row { padding: 12px 8px; gap: 12px; }
+  .rx-tile { width: 38px; height: 38px; flex: 0 0 38px; }
+  .rx-tile .lu { width: 20px; height: 20px; }
+  .list-name { font-size: 14px; }
+  .list-meta { font-size: 12px; }
+
+  /* Lab rows */
+  .lab-row { padding: 12px 8px; gap: 10px; }
+  .lab-right { gap: 8px; }
+  .lab-value { font-size: 15px; }
+
+  /* Delivery timeline */
+  .delivery { padding: 12px 8px; gap: 12px; }
+  .delivery-row1 { flex-direction: column; gap: 2px; align-items: flex-start; }
+
+  /* Card body padding */
+  .card-body--padded { padding: 16px; }
+  .card-header { padding: 14px 16px; }
+  .card-footer { padding: 12px 16px; }
+
+  /* KV grid: stack key over value */
+  .kv {
+    grid-template-columns: 1fr;
+    gap: 4px 0;
+  }
+  .kv .k { padding-top: 8px; font-size: 12px; }
+  .kv .k:first-child { padding-top: 0; }
+
+  /* Drug fact grid */
+  .drug-fact-grid { grid-template-columns: 1fr; gap: 10px; }
+
+  /* Shop grid: 2 columns even on small phones (already covered by 780px) */
+  .shop-grid { gap: 10px; }
+  .product-card { padding: 12px; gap: 8px; }
+  .product-name { font-size: 13px; }
+  .product-price { font-size: 14px; }
+
+  /* Cart */
+  .cart-item { padding: 12px 0; gap: 10px; }
+  .cart-thumb { width: 56px; height: 56px; flex: 0 0 56px; }
+  .summary-card { padding: 16px; }
+
+  /* Buttons */
+  .btn { height: 44px; padding: 0 14px; }
+  .btn-lg { height: 50px; padding: 0 18px; font-size: 15px; }
+
+  /* Forms */
+  .input, .select { height: 46px; font-size: 16px; /* avoid iOS zoom */ }
+  .textarea { font-size: 16px; }
+
+  /* Segmented control: full width */
+  .seg { width: 100%; }
+  .seg-opt { font-size: 12px; padding: 0 8px; }
+
+  /* Login screen */
+  .login-aside { display: none; }
+  .login-main { padding: 32px 20px; }
+  .login-card { max-width: 100%; }
+  .login-title { font-size: 22px; }
+  .login-sub { font-size: 14px; margin-bottom: 22px; }
+  .login-method-tabs { margin-bottom: 18px; }
+  .login-google-btn { height: 46px; }
+  .otp-row { gap: 6px; }
+  .otp-input { width: 42px; height: 50px; font-size: 20px; }
+
+  /* Calendar */
+  .cal { padding: 10px; }
+  .cal-day { font-size: 12px; }
+
+  /* Time window grid: full width */
+  .time-window-grid { grid-template-columns: 1fr; }
+
+  /* Modal → bottom sheet */
+  .scrim {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .modal {
+    max-width: 100%;
+    width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    animation: rise-sheet 240ms var(--ease-standard);
+  }
+  @keyframes rise-sheet {
+    from { opacity: 0.6; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .modal-head { padding: 14px 18px; }
+  .modal-title { font-size: 16px; }
+  .modal-body { padding: 18px; }
+  .modal-foot {
+    padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+  .modal-foot .btn { width: 100%; }
+
+  /* Toast — sit above the tab bar */
+  .toast-stack {
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    left: 12px; right: 12px;
+    transform: none;
+  }
+  .toast { font-size: 13px; padding: 10px 14px; }
+
+  /* Messages thread */
+  .thread { padding: 14px; min-height: 280px; }
+  .msg { max-width: 85%; }
+  .composer { padding: 10px 12px; }
+
+  /* Profile */
+  .profile-header { padding: 18px; gap: 14px; }
+  .profile-avatar-lg { width: 60px; height: 60px; flex: 0 0 60px; font-size: 22px; }
+  .profile-name { font-size: 18px; }
+  .profile-meta { font-size: 13px; }
+  .side-nav { padding: 6px; }
+  .side-link { padding: 12px; font-size: 14px; }
+
+  /* Steps */
+  .steps { padding: 4px 0 14px; margin-bottom: 16px; }
+  .step { font-size: 12px; }
+  .step + .step::before { margin: 0 6px; }
+
+  /* Search input — full width on mobile */
+  .search-input { width: 100%; }
+
+  /* Hide messages icon in TopNav nav-right at very small widths if needed */
+}
+
+/* ===================== Tablet adjustments (641–880px) ===================== */
+@media (max-width: 880px) and (min-width: 641px) {
+  .topnav { padding: 0 18px; gap: 16px; }
+  .topnav .tab { padding: 0 10px; font-size: 13px; }
+  .topnav .tab .lu { width: 14px; height: 14px; }
+  .page { padding: 24px 20px 80px; }
+}

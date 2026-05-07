@@ -9,6 +9,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { TopNav, type RouteKey } from "@/components/Layout";
+import { MobileTabBar } from "@/components/MobileTabBar";
 import { ToastStack } from "@/components/ui";
 import { useApp } from "@/context";
 import DashboardA from "@/screens/DashboardA";
@@ -49,16 +50,18 @@ function ProtectedShell() {
   }
 
   const cartCount = cart.reduce((s, x) => s + x.qty, 0);
+  const active = activeFromPath(loc.pathname);
   return (
     <>
       <TopNav
-        active={activeFromPath(loc.pathname)}
+        active={active}
         patient={patient}
         cartCount={cartCount}
         msgCount={unreadMsg}
       />
       <Outlet />
       <ToastStack toasts={toasts} />
+      <MobileTabBar active={active} />
     </>
   );
 }
