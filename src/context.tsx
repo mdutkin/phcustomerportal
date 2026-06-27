@@ -1,7 +1,8 @@
 // Shared app state — auth flag, prescriptions, cart, billing balance, toasts,
 // and the patient profile. Lives at the top of the route tree in App.tsx.
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { onAuthStateChanged, type User } from "firebase/auth";
 import {
   BILLING,
   type CartItem,
@@ -12,10 +13,14 @@ import {
   type Prescription,
 } from "./data";
 import type { Toast } from "./components/ui";
+import { auth } from "./lib/firebase";
+import { signOutUser } from "./lib/auth";
 
 interface AppCtx {
   authed: boolean;
-  setAuthed: (v: boolean) => void;
+  authLoading: boolean;
+  firebaseUser: User | null;
+  signOut: () => Promise<void>;
   patient: Patient;
   prescriptions: Prescription[];
   refillRx: (id: string) => void;
@@ -32,7 +37,20 @@ interface AppCtx {
 const Ctx = createContext<AppCtx | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [authed, setAuthed] = useState(true); // demo: start signed-in
+  // Auth state is owned by Firebase. `authed` is derived; `authLoading` is true
+  // until the first onAuthStateChanged fires (so the router doesn't bounce to
+  // /login before Firebase restores the session).
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setFirebaseUser(u);
+      setAuthLoading(false);
+    });
+    return unsub;
+  }, []);
+  const authed = firebaseUser !== null;
+
   const [prescriptions, setPrescriptions] = useState<Prescription[]>(PRESCRIPTIONS);
   const [balance, setBalance] = useState<number>(BILLING.total);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -78,7 +96,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: AppCtx = {
     authed,
-    setAuthed,
+    authLoading,
+    firebaseUser,
+    signOut: signOutUser,
     patient: PATIENT,
     prescriptions,
     refillRx,

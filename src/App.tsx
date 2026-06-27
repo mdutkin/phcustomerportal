@@ -6,7 +6,6 @@ import {
   Route,
   Routes,
   useLocation,
-  useNavigate,
 } from "react-router-dom";
 import { TopNav, type RouteKey } from "@/components/Layout";
 import { MobileTabBar } from "@/components/MobileTabBar";
@@ -40,13 +39,15 @@ function activeFromPath(path: string): RouteKey {
 }
 
 function ProtectedShell() {
-  const { authed, patient, cart, unreadMsg, toasts } = useApp();
+  const { authed, authLoading, patient, cart, unreadMsg, toasts } = useApp();
   const loc = useLocation();
-  const nav = useNavigate();
 
+  // Wait for Firebase to restore the session before deciding to redirect.
+  if (authLoading) {
+    return <div className="auth-loading">Loading…</div>;
+  }
   if (!authed) {
-    nav("/login", { replace: true });
-    return null;
+    return <Navigate to="/login" replace />;
   }
 
   const cartCount = cart.reduce((s, x) => s + x.qty, 0);

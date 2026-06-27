@@ -1,22 +1,21 @@
-// Login screen — phone OTP, email/password, or Google.
-// Auth is mocked: any "send code" / "sign in" flips the auth flag.
+// Login screen. v1 = real Firebase phone sign-in (sign-up and sign-in are the
+// same flow). Email/Google tabs are placeholders until later phases.
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type { ConfirmationResult } from "firebase/auth";
 import logo from "@/assets/medico-logo.svg";
 import { Button, Field } from "@/components/ui";
 import { Icon } from "@/components/Icon";
 import { useApp } from "@/context";
+import { sendSmsCode, confirmSmsCode } from "@/lib/auth";
+import { syncMe } from "@/lib/api";
 
 type Method = "phone" | "email" | "google";
 
 export default function Login() {
-  const { setAuthed } = useApp();
+  const { pushToast } = useApp();
   const nav = useNavigate();
-  const onLogin = () => {
-    setAuthed(true);
-    nav("/");
-  };
 
   const [method, setMethod] = useState<Method>("phone");
   const [phone, setPhone] = useState("");
@@ -25,10 +24,40 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const handleSendCode = () => {
-    if (phone.length >= 10) setOtpStep(true);
+  const handleSendCode = async () => {
+    if (phone.replace(/\D/g, "").length < 10 || busy) return;
+    setBusy(true);
+    try {
+      const conf = await sendSmsCode(phone, "recaptcha-container");
+      setConfirmation(conf);
+      setOtpStep(true);
+    } catch {
+      pushToast("Couldn't send a code to that number. Check it and try again.");
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const verifyCode = async (code: string) => {
+    if (!confirmation || code.length !== 6 || busy) return;
+    setBusy(true);
+    try {
+      await confirmSmsCode(confirmation, code);
+      await syncMe(); // best-effort: provision backend user row
+      nav("/"); // onAuthStateChanged flips `authed`; ProtectedShell renders
+    } catch {
+      pushToast("That code didn't match. Please try again.");
+      setOtp(["", "", "", "", "", ""]);
+      document.getElementById("otp-0")?.focus();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const comingSoon = () => pushToast("Phone sign-in is the only method right now.");
 
   const handleOtpChange = (i: number, v: string) => {
     const next = [...otp];
@@ -38,7 +67,7 @@ export default function Login() {
       const el = document.getElementById(`otp-${i + 1}`) as HTMLInputElement | null;
       el?.focus();
     }
-    if (next.every((x) => x.length === 1)) setTimeout(onLogin, 400);
+    if (next.every((x) => x.length === 1)) void verifyCode(next.join(""));
   };
 
   return (
@@ -130,9 +159,9 @@ export default function Login() {
                 size="lg"
                 block
                 onClick={handleSendCode}
-                disabled={phone.length < 10}
+                disabled={phone.replace(/\D/g, "").length < 10 || busy}
               >
-                Send code
+                {busy ? "Sending…" : "Send code"}
               </Button>
             </div>
           )}
@@ -165,8 +194,13 @@ export default function Login() {
                   · <a className="link" style={{ display: "inline" }}>Resend code</a>
                 </p>
               </Field>
-              <Button variant="secondary" block onClick={onLogin}>
-                Verify and continue
+              <Button
+                variant="secondary"
+                block
+                disabled={busy}
+                onClick={() => void verifyCode(otp.join(""))}
+              >
+                {busy ? "Verifying…" : "Verify and continue"}
               </Button>
             </div>
           )}
@@ -216,7 +250,7 @@ export default function Login() {
                 </label>
                 <a className="link">Forgot password?</a>
               </div>
-              <Button variant="primary" size="lg" block onClick={onLogin}>
+              <Button variant="primary" size="lg" block onClick={comingSoon}>
                 Sign in
               </Button>
             </div>
@@ -228,7 +262,7 @@ export default function Login() {
                 Continue with the Google account associated with your Medico Pharmacy
                 profile. We never share your medical data with Google.
               </p>
-              <button className="login-google-btn" onClick={onLogin} type="button">
+              <button className="login-google-btn" onClick={comingSoon} type="button">
                 <svg width="18" height="18" viewBox="0 0 48 48">
                   <path
                     fill="#FFC107"
@@ -269,6 +303,9 @@ export default function Login() {
               <Icon name="user-check" /> SOC 2 Type II
             </span>
           </div>
+
+          {/* Invisible reCAPTCHA mount for Firebase phone auth. */}
+          <div id="recaptcha-container" />
 
           <div className="login-foot">
             <p style={{ margin: 0 }}>

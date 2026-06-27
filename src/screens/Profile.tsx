@@ -24,7 +24,7 @@ type SectionId =
 
 export default function Profile() {
   const nav = useNavigate();
-  const { patient, setAuthed } = useApp();
+  const { patient, signOut } = useApp();
   const [section, setSection] = useState<SectionId>("personal");
 
   const sections: Section[] = [
@@ -37,8 +37,8 @@ export default function Profile() {
     { id: "notif", label: "Notifications", icon: "bell" },
   ];
 
-  const onLogout = () => {
-    setAuthed(false);
+  const onLogout = async () => {
+    await signOut();
     nav("/login");
   };
 
