@@ -8,22 +8,30 @@ import {
   type CartItem,
   MESSAGES,
   PATIENT,
-  PRESCRIPTIONS,
   type Patient,
   type Prescription,
 } from "./data";
 import type { Toast } from "./components/ui";
 import { auth } from "./lib/firebase";
 import { signOutUser } from "./lib/auth";
+import { ApiError, getMe, listPrescriptions, requestRefill } from "./lib/api";
+import { apiRxToPrescription } from "./lib/mappers";
+import type { Me } from "./lib/types";
 
 interface AppCtx {
   authed: boolean;
   authLoading: boolean;
   firebaseUser: User | null;
   signOut: () => Promise<void>;
+  /** Backend identity: me.link === null → not yet linked to a PrimeRX patient. */
+  me: Me | null;
+  meLoading: boolean;
+  refreshMe: () => Promise<void>;
   patient: Patient;
   prescriptions: Prescription[];
-  refillRx: (id: string) => void;
+  rxLoading: boolean;
+  refreshPrescriptions: () => Promise<void>;
+  refillRx: (id: string) => Promise<void>;
   balance: number;
   payBalance: () => void;
   cart: CartItem[];
@@ -51,7 +59,61 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
   const authed = firebaseUser !== null;
 
-  const [prescriptions, setPrescriptions] = useState<Prescription[]>(PRESCRIPTIONS);
+  // Backend identity. Fetched once we're authed; `link === null` means the user
+  // hasn't claimed their PrimeRX patient record yet and must verify first.
+  const [me, setMe] = useState<Me | null>(null);
+  const [meLoading, setMeLoading] = useState(false);
+
+  const refreshMe = async () => {
+    if (!auth.currentUser) {
+      setMe(null);
+      return;
+    }
+    setMeLoading(true);
+    try {
+      setMe(await getMe());
+    } catch {
+      setMe(null); // stay unlinked; screens surface the error path
+    } finally {
+      setMeLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!authed) {
+      setMe(null);
+      return;
+    }
+    void refreshMe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authed, authLoading]);
+
+  // Real prescriptions, straight from PrimeRX (via the API). Starts empty —
+  // NOT the mock list — so we never show one patient's data to another.
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
+  const [rxLoading, setRxLoading] = useState(false);
+
+  const refreshPrescriptions = async () => {
+    if (!auth.currentUser) return;
+    setRxLoading(true);
+    try {
+      const rows = await listPrescriptions();
+      setPrescriptions(rows.map(apiRxToPrescription));
+    } catch {
+      setPrescriptions([]);
+    } finally {
+      setRxLoading(false);
+    }
+  };
+
+  // Only once the user is actually linked to a patient record.
+  useEffect(() => {
+    if (me?.link) void refreshPrescriptions();
+    else setPrescriptions([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.link?.patientno, me?.link?.dbKind]);
+
   const [balance, setBalance] = useState<number>(BILLING.total);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -63,21 +125,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setToasts((cur) => cur.filter((x) => x.id !== id)), 4500);
   };
 
-  const refillRx = (id: string) => {
-    setPrescriptions((cur) =>
-      cur.map((m) =>
-        m.id === id
-          ? {
-              ...m,
-              status: "Refill requested",
-              statusTone: "info",
-              daysLeft: (m.daysLeft ?? 0) + m.daysSupply,
-              refillsRemaining: Math.max(0, m.refillsRemaining - 1),
-            }
-          : m,
-      ),
-    );
-    pushToast("Refill requested — we'll text you when it's ready.");
+  // Real refill request: lands in the pharmacist's queue. We do NOT decrement
+  // refills locally — nothing is dispensed until a pharmacist acts, so the
+  // count must keep coming from PrimeRX.
+  const refillRx = async (id: string) => {
+    try {
+      await requestRefill(id);
+      setPrescriptions((cur) =>
+        cur.map((m) => (m.id === id ? { ...m, status: "Refill requested", statusTone: "info" } : m)),
+      );
+      pushToast("Refill requested — the pharmacy will confirm shortly.");
+    } catch (e) {
+      const err = e as ApiError;
+      if (err.code === "request_already_pending") {
+        pushToast("You've already requested a refill for this prescription.");
+      } else if (err.code === "no_refills_remaining") {
+        pushToast("No refills left — your prescriber needs to authorise a new one.");
+      } else {
+        pushToast(err.message || "Couldn't request that refill. Please try again.");
+      }
+    }
   };
 
   const payBalance = () => {
@@ -99,8 +166,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     authLoading,
     firebaseUser,
     signOut: signOutUser,
+    me,
+    meLoading,
+    refreshMe,
     patient: PATIENT,
     prescriptions,
+    rxLoading,
+    refreshPrescriptions,
     refillRx,
     balance,
     payBalance,
