@@ -97,9 +97,10 @@ export default function Login() {
 
       <main className="login-main">
         <div className="login-card">
-          <h1 className="login-title">Welcome back</h1>
+          <h1 className="login-title">Sign in</h1>
           <p className="login-sub">
-            Sign in to refill prescriptions, view lab results, and manage deliveries.
+            New or returning — just enter your mobile number. No sign-up, no
+            password. We'll text you a code.
           </p>
 
           {!otpStep && (
@@ -190,7 +191,7 @@ export default function Login() {
 
           <div className="login-foot">
             <p style={{ margin: 0 }}>
-              New to Medico? <a>Create an account</a>
+              No account to create — your mobile number is your login.
             </p>
             <p style={{ margin: 0, fontSize: 12 }}>
               By continuing you agree to the <a>Terms</a> and <a>Privacy Notice</a>.
