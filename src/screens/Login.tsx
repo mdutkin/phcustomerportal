@@ -1,5 +1,8 @@
 // Login screen. v1 = real Firebase phone sign-in (sign-up and sign-in are the
-// same flow). Email/Google tabs are placeholders until later phases.
+// same flow). Phone is the only method: it's our proof-of-possession factor,
+// the number Firebase verifies is what we match against the patient's on-file
+// number at claim time. Email/Google are intentionally omitted until we add a
+// phone-link step (they carry no verified phone, so they can't gate claim).
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,19 +14,13 @@ import { useApp } from "@/context";
 import { sendSmsCode, confirmSmsCode } from "@/lib/auth";
 import { syncMe } from "@/lib/api";
 
-type Method = "phone" | "email" | "google";
-
 export default function Login() {
   const { pushToast } = useApp();
   const nav = useNavigate();
 
-  const [method, setMethod] = useState<Method>("phone");
   const [phone, setPhone] = useState("");
   const [otpStep, setOtpStep] = useState(false);
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
-  const [showPw, setShowPw] = useState(false);
   const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -56,8 +53,6 @@ export default function Login() {
       setBusy(false);
     }
   };
-
-  const comingSoon = () => pushToast("Phone sign-in is the only method right now.");
 
   const handleOtpChange = (i: number, v: string) => {
     const next = [...otp];
@@ -107,34 +102,7 @@ export default function Login() {
             Sign in to refill prescriptions, view lab results, and manage deliveries.
           </p>
 
-          <div className="login-method-tabs">
-            <button
-              type="button"
-              className={`seg-opt ${method === "phone" ? "active" : ""}`}
-              onClick={() => {
-                setMethod("phone");
-                setOtpStep(false);
-              }}
-            >
-              <Icon name="smartphone" /> Phone
-            </button>
-            <button
-              type="button"
-              className={`seg-opt ${method === "email" ? "active" : ""}`}
-              onClick={() => setMethod("email")}
-            >
-              <Icon name="mail" /> Email
-            </button>
-            <button
-              type="button"
-              className={`seg-opt ${method === "google" ? "active" : ""}`}
-              onClick={() => setMethod("google")}
-            >
-              <Icon name="globe" /> Google
-            </button>
-          </div>
-
-          {method === "phone" && !otpStep && (
+          {!otpStep && (
             <div className="login-form">
               <Field
                 label="Mobile phone number"
@@ -166,7 +134,7 @@ export default function Login() {
             </div>
           )}
 
-          {method === "phone" && otpStep && (
+          {otpStep && (
             <div className="login-form">
               <Field label="Enter the 6-digit code">
                 <div className="otp-row">
@@ -202,93 +170,6 @@ export default function Login() {
               >
                 {busy ? "Verifying…" : "Verify and continue"}
               </Button>
-            </div>
-          )}
-
-          {method === "email" && (
-            <div className="login-form">
-              <Field label="Email address">
-                <input
-                  className="input"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </Field>
-              <Field label="Password">
-                <div className="input-group">
-                  <input
-                    className="input"
-                    type={showPw ? "text" : "password"}
-                    placeholder="Your password"
-                    value={pw}
-                    onChange={(e) => setPw(e.target.value)}
-                  />
-                  <button
-                    className="icon-btn"
-                    style={{ marginRight: 4 }}
-                    onClick={() => setShowPw((s) => !s)}
-                    type="button"
-                    aria-label="Show password"
-                  >
-                    <Icon name={showPw ? "eye-off" : "eye"} />
-                  </button>
-                </div>
-              </Field>
-              <div className="row-spread">
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    fontSize: 13,
-                    color: "var(--fg-2)",
-                  }}
-                >
-                  <input type="checkbox" /> Keep me signed in
-                </label>
-                <a className="link">Forgot password?</a>
-              </div>
-              <Button variant="primary" size="lg" block onClick={comingSoon}>
-                Sign in
-              </Button>
-            </div>
-          )}
-
-          {method === "google" && (
-            <div className="login-form">
-              <p className="muted" style={{ fontSize: 14, margin: 0 }}>
-                Continue with the Google account associated with your Medico Pharmacy
-                profile. We never share your medical data with Google.
-              </p>
-              <button className="login-google-btn" onClick={comingSoon} type="button">
-                <svg width="18" height="18" viewBox="0 0 48 48">
-                  <path
-                    fill="#FFC107"
-                    d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"
-                  />
-                  <path
-                    fill="#FF3D00"
-                    d="m6.3 14.7 6.6 4.8C14.7 16 19 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34.5 7.1 29.5 5 24 5 16.3 5 9.7 9.3 6.3 14.7z"
-                  />
-                  <path
-                    fill="#4CAF50"
-                    d="M24 44c5.4 0 10.3-2.1 14-5.5l-6.5-5.4c-2 1.4-4.6 2.3-7.5 2.3-5.3 0-9.7-3.4-11.3-8L6 32.6C9.4 39.3 16.1 44 24 44z"
-                  />
-                  <path
-                    fill="#1976D2"
-                    d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4.1 5.6l6.5 5.4c-.4.4 7.3-5.3 7.3-15-.1-1.4-.2-2.4-.4-3.5z"
-                  />
-                </svg>
-                Continue with Google
-              </button>
-              <p
-                className="muted"
-                style={{ fontSize: 12, textAlign: "center", margin: 0 }}
-              >
-                You'll be taken to Google to confirm, then returned here.
-              </p>
             </div>
           )}
 
