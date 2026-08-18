@@ -1,26 +1,23 @@
-// Profile — account sections (personal, health, insurance, addresses, payment, security, notif).
+// Profile — account sections backed by real /me data (PrimeRX + our user row).
+// Only sections we actually have data for: personal info, allergies, insurance,
+// addresses. Payment / Security / Notifications were dropped — no data source
+// (payments), N/A for phone-only auth (security), or no prefs backend (notifs).
+// Read-only for now; Edit will later route through the pharmacist request queue.
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, Pill } from "@/components/ui";
+import { Card, Pill } from "@/components/ui";
 import { Icon, type IconName } from "@/components/Icon";
 import { PageHeader } from "@/components/Layout";
-import { BILLING } from "@/data";
 import { useApp } from "@/context";
+
+type SectionId = "personal" | "allergies" | "insurance" | "addresses";
 
 interface Section {
   id: SectionId;
   label: string;
   icon: IconName;
 }
-type SectionId =
-  | "personal"
-  | "health"
-  | "insurance"
-  | "addresses"
-  | "payment"
-  | "security"
-  | "notif";
 
 export default function Profile() {
   const nav = useNavigate();
@@ -29,12 +26,9 @@ export default function Profile() {
 
   const sections: Section[] = [
     { id: "personal", label: "Personal info", icon: "user" },
-    { id: "health", label: "Health profile", icon: "heart-pulse" },
+    { id: "allergies", label: "Allergies", icon: "heart-pulse" },
     { id: "insurance", label: "Insurance", icon: "shield" },
     { id: "addresses", label: "Addresses", icon: "map-pin" },
-    { id: "payment", label: "Payment methods", icon: "credit-card" },
-    { id: "security", label: "Security", icon: "lock" },
-    { id: "notif", label: "Notifications", icon: "bell" },
   ];
 
   const onLogout = async () => {
@@ -44,7 +38,7 @@ export default function Profile() {
 
   return (
     <main className="page" data-screen-label="Profile">
-      <PageHeader title="Account" sub="Personal info, insurance, and security." />
+      <PageHeader title="Account" sub="Personal info, insurance, and allergies." />
 
       <div className="cols-1-2">
         <Card>
@@ -85,14 +79,7 @@ export default function Profile() {
 
         <div className="col-stack">
           {section === "personal" && (
-            <Card
-              title="Personal information"
-              action={
-                <Button variant="ghost" size="sm" leadingIcon="edit-2">
-                  Edit
-                </Button>
-              }
-            >
+            <Card title="Personal information">
               <div style={{ padding: 20 }}>
                 <div className="kv">
                   <span className="k">Full name</span>
@@ -109,34 +96,27 @@ export default function Profile() {
               </div>
             </Card>
           )}
-          {section === "health" && (
-            <Card title="Health profile">
+
+          {section === "allergies" && (
+            <Card title="Allergies">
               <div style={{ padding: 20 }}>
-                <div className="kv">
-                  <span className="k">Allergies</span>
-                  <span className="v">
+                {patient.allergies.length > 0 ? (
+                  <div className="row" style={{ flexWrap: "wrap", gap: 8 }}>
                     {patient.allergies.map((a) => (
                       <Pill key={a} tone="danger" icon="alert-triangle">
                         {a}
                       </Pill>
                     ))}
-                  </span>
-                  <span className="k">Conditions</span>
-                  <span className="v">
-                    High cholesterol · Hypertension · Type 2 diabetes
-                  </span>
-                  <span className="k">Primary care</span>
-                  <span className="v">
-                    Dr. Rohan Patel — Bay Family Health
-                  </span>
-                  <span className="k">Pharmacist</span>
-                  <span className="v">
-                    Maria Torres, RPh — Maple St. Pharmacy
-                  </span>
-                </div>
+                  </div>
+                ) : (
+                  <div className="muted" style={{ fontSize: 14 }}>
+                    No allergies on file. If that's not right, call the pharmacy to update it.
+                  </div>
+                )}
               </div>
             </Card>
           )}
+
           {section === "insurance" && (
             <Card title="Insurance">
               <div style={{ padding: 20 }}>
@@ -147,114 +127,17 @@ export default function Profile() {
                   <span className="v">{patient.insurance.member}</span>
                   <span className="k">Group</span>
                   <span className="v">{patient.insurance.group}</span>
-                  <span className="k">Effective</span>
-                  <span className="v">Jan 1, 2026 – Dec 31, 2026</span>
                 </div>
               </div>
             </Card>
           )}
+
           {section === "addresses" && (
             <Card title="Addresses">
               <div style={{ padding: 20 }}>
                 <div className="kv">
                   <span className="k">Home</span>
                   <span className="v">{patient.address}</span>
-                </div>
-              </div>
-            </Card>
-          )}
-          {section === "payment" && (
-            <Card title="Payment methods">
-              <div style={{ padding: 20 }}>
-                <div className="row" style={{ gap: 12 }}>
-                  <span
-                    style={{
-                      width: 44,
-                      height: 32,
-                      borderRadius: 6,
-                      background:
-                        "linear-gradient(135deg, #1A1F71 0%, #1A1F71 60%, #F7B600 60%)",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#fff",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: "0.08em",
-                    }}
-                  >
-                    VISA
-                  </span>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: "var(--fg-1)",
-                      }}
-                    >
-                      Visa · {BILLING.card.last4}
-                    </div>
-                    <div style={{ fontSize: 12, color: "var(--fg-3)" }}>
-                      Exp {BILLING.card.exp} · Default
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )}
-          {section === "security" && (
-            <Card title="Security">
-              <div
-                style={{
-                  padding: 20,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                }}
-              >
-                <div className="row-spread">
-                  <span>
-                    <b>Two-factor authentication</b>
-                    <div className="muted" style={{ fontSize: 13 }}>
-                      Text message to {patient.phone}
-                    </div>
-                  </span>
-                  <Pill tone="success" icon="check">
-                    On
-                  </Pill>
-                </div>
-                <div className="row-spread">
-                  <span>
-                    <b>Password</b>
-                    <div className="muted" style={{ fontSize: 13 }}>
-                      Last changed Feb 12, 2026
-                    </div>
-                  </span>
-                  <Button variant="ghost" size="sm">
-                    Change
-                  </Button>
-                </div>
-                <div className="row-spread">
-                  <span>
-                    <b>Connected accounts</b>
-                    <div className="muted" style={{ fontSize: 13 }}>
-                      Google · margaret.chen@gmail.com
-                    </div>
-                  </span>
-                  <Button variant="ghost" size="sm">
-                    Manage
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )}
-          {section === "notif" && (
-            <Card title="Notifications">
-              <div style={{ padding: 20 }}>
-                <div className="muted" style={{ fontSize: 14 }}>
-                  Choose how Medico contacts you about refills, deliveries, and lab
-                  results.
                 </div>
               </div>
             </Card>

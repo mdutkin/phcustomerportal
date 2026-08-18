@@ -15,7 +15,7 @@ import type { Toast } from "./components/ui";
 import { auth } from "./lib/firebase";
 import { signOutUser } from "./lib/auth";
 import { ApiError, getMe, listPrescriptions, requestRefill } from "./lib/api";
-import { apiRxToPrescription } from "./lib/mappers";
+import { apiMeToPatient, apiRxToPrescription } from "./lib/mappers";
 import type { Me } from "./lib/types";
 
 interface AppCtx {
@@ -89,6 +89,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed, authLoading]);
 
+  // Real patient profile derived from /me. The mock is only a pre-load fallback
+  // to satisfy the non-null type — the shell renders only once linked, so in
+  // practice this is always the real record.
+  const patient = me?.patient ? apiMeToPatient(me) : PATIENT;
+
   // Real prescriptions, straight from PrimeRX (via the API). Starts empty —
   // NOT the mock list — so we never show one patient's data to another.
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
@@ -149,7 +154,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const payBalance = () => {
     setBalance(0);
-    pushToast(`Payment received — receipt sent to ${PATIENT.email}.`);
+    pushToast(`Payment received — receipt sent to ${patient.email}.`);
   };
 
   const addToCart = (p: import("./data").OtcProduct) => {
@@ -169,7 +174,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     me,
     meLoading,
     refreshMe,
-    patient: PATIENT,
+    patient,
     prescriptions,
     rxLoading,
     refreshPrescriptions,
