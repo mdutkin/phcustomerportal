@@ -48,13 +48,6 @@ export interface Prescription {
   price: number;
 }
 
-export interface PastPrescription {
-  name: string;
-  filled: string;
-  reason: string;
-  prescriber: string;
-}
-
 export interface Delivery {
   id: string;
   date: string;
@@ -152,12 +145,6 @@ export const PRESCRIPTIONS: Prescription[] = [
     purpose: "Vitamin D supplementation",
     status: "Active", statusTone: "neutral", price: 5.40,
   },
-];
-
-export const PAST_PRESCRIPTIONS: PastPrescription[] = [
-  { name: "Amoxicillin 500 mg", filled: "Jan 18, 2026", reason: "Sinus infection (10 days)",     prescriber: "patel" },
-  { name: "Prednisone 10 mg",   filled: "Nov 4, 2025",  reason: "Allergic reaction (5 days taper)", prescriber: "patel" },
-  { name: "Atorvastatin 10 mg", filled: "Aug 12, 2024", reason: "Replaced by 20 mg dose",         prescriber: "patel" },
 ];
 
 export const DELIVERIES: Delivery[] = [
