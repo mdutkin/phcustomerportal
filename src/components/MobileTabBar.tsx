@@ -13,11 +13,10 @@ interface MobileTab {
 }
 
 const tabs: MobileTab[] = [
-  { id: "Dashboard",     label: "Home",    icon: "home",          to: "/" },
-  { id: "prescriptions", label: "Rx",      icon: "pill",          to: "/prescriptions" },
-  { id: "labs",          label: "Labs",    icon: "flask-conical", to: "/labs" },
-  { id: "shop",          label: "Shop",    icon: "shopping-bag",  to: "/shop" },
-  { id: "profile",       label: "Account", icon: "user",          to: "/profile" },
+  { id: "Dashboard",     label: "Home",     icon: "home",          to: "/" },
+  { id: "prescriptions", label: "Rx",       icon: "pill",          to: "/prescriptions" },
+  { id: "messages",      label: "Messages", icon: "message-square", to: "/messages" },
+  { id: "profile",       label: "Account",  icon: "user",          to: "/profile" },
 ];
 
 interface MobileTabBarProps {

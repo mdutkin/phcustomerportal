@@ -1,6 +1,6 @@
-// MedicationRow, LabResultRow, DeliveryItem — list-item primitives.
+// MedicationRow, DeliveryItem — list-item primitives.
 
-import type { LabResult, Prescription, StatusTone } from "@/data";
+import type { Prescription, StatusTone } from "@/data";
 import { Icon } from "./Icon";
 import { Pill, type PillTone } from "./ui";
 
@@ -28,35 +28,6 @@ export function MedicationRow({ med, onClick }: MedicationRowProps) {
         <Pill tone={med.statusTone as PillTone}>{med.status}</Pill>
         <span className="caption">
           {med.daysLeft != null ? `${med.daysLeft} days left` : med.daysSub}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ────────────── Lab row
-
-interface LabResultRowProps {
-  lab: LabResult;
-  onClick?: () => void;
-}
-
-export function LabResultRow({ lab, onClick }: LabResultRowProps) {
-  return (
-    <div className="lab-row" onClick={onClick}>
-      <div>
-        <div className="lab-name">{lab.name}</div>
-        <div className="lab-meta">
-          {lab.when} · {lab.source}
-        </div>
-      </div>
-      <div className="lab-right">
-        <span className="tabular">
-          <span className="lab-value">{lab.value}</span>
-          <span className="lab-unit">{lab.unit}</span>
-        </span>
-        <span className={`flag flag-${lab.flag === "H" ? "h" : lab.flag === "L" ? "l" : "ok"}`}>
-          {lab.flag === "H" ? "HIGH" : lab.flag === "L" ? "LOW" : "OK"}
         </span>
       </div>
     </div>

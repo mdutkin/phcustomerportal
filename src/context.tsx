@@ -4,8 +4,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import {
-  BILLING,
-  type CartItem,
   MESSAGES,
   PATIENT,
   type Patient,
@@ -32,11 +30,6 @@ interface AppCtx {
   rxLoading: boolean;
   refreshPrescriptions: () => Promise<void>;
   refillRx: (id: string) => Promise<void>;
-  balance: number;
-  payBalance: () => void;
-  cart: CartItem[];
-  setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
-  addToCart: (p: import("./data").OtcProduct) => void;
   unreadMsg: number;
   toasts: Toast[];
   pushToast: (text: string) => void;
@@ -119,8 +112,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me?.link?.patientno, me?.link?.dbKind]);
 
-  const [balance, setBalance] = useState<number>(BILLING.total);
-  const [cart, setCart] = useState<CartItem[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const unreadMsg = MESSAGES.filter((m) => m.unread).length;
 
@@ -152,20 +143,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const payBalance = () => {
-    setBalance(0);
-    pushToast(`Payment received — receipt sent to ${patient.email}.`);
-  };
-
-  const addToCart = (p: import("./data").OtcProduct) => {
-    setCart((cur) => {
-      const existing = cur.find((c) => c.id === p.id);
-      if (existing) return cur.map((c) => (c.id === p.id ? { ...c, qty: c.qty + 1 } : c));
-      return [...cur, { ...p, qty: 1 }];
-    });
-    pushToast(`Added ${p.name}`);
-  };
-
   const value: AppCtx = {
     authed,
     authLoading,
@@ -179,11 +156,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     rxLoading,
     refreshPrescriptions,
     refillRx,
-    balance,
-    payBalance,
-    cart,
-    setCart,
-    addToCart,
     unreadMsg,
     toasts,
     pushToast,

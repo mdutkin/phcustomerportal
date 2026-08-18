@@ -9,15 +9,10 @@ import { Icon, type IconName } from "./Icon";
 export type RouteKey =
   | "Dashboard"
   | "prescriptions"
-  | "labs"
-  | "shop"
-  | "billing"
   | "messages"
   | "profile"
   | "rx"
-  | "drug"
-  | "lab"
-  | "cart";
+  | "drug";
 
 interface TopNavTab {
   id: RouteKey;
@@ -29,19 +24,15 @@ interface TopNavTab {
 const tabs: TopNavTab[] = [
   { id: "Dashboard",     label: "Dashboard",     icon: "home",          to: "/" },
   { id: "prescriptions", label: "Prescriptions", icon: "pill",          to: "/prescriptions" },
-  { id: "labs",          label: "Lab results",   icon: "flask-conical", to: "/labs" },
-  { id: "shop",          label: "Shop",          icon: "shopping-bag",  to: "/shop" },
-  { id: "billing",       label: "Billing",       icon: "credit-card",   to: "/billing" },
 ];
 
 interface TopNavProps {
   active: RouteKey;
   patient: Patient;
-  cartCount?: number;
   msgCount?: number;
 }
 
-export function TopNav({ active, patient, cartCount = 0, msgCount = 0 }: TopNavProps) {
+export function TopNav({ active, patient, msgCount = 0 }: TopNavProps) {
   const nav = useNavigate();
   return (
     <nav className="topnav" aria-label="Primary">
@@ -63,10 +54,6 @@ export function TopNav({ active, patient, cartCount = 0, msgCount = 0 }: TopNavP
         ))}
       </div>
       <div className="nav-right">
-        <button className="icon-btn" aria-label="Cart" onClick={() => nav("/cart")} type="button">
-          <Icon name="shopping-cart" />
-          {cartCount > 0 ? <span className="badge">{cartCount}</span> : null}
-        </button>
         <button className="icon-btn" aria-label="Messages" onClick={() => nav("/messages")} type="button">
           <Icon name="message-square" />
           {msgCount > 0 ? <span className="badge">{msgCount}</span> : null}
