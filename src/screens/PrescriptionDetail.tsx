@@ -252,9 +252,12 @@ export default function PrescriptionDetail() {
                   </div>
                   <div className="list-right">
                     {h.pickedUp ? (
-                      <Pill tone="success">Picked up {fmtDate(h.pickupDate)}</Pill>
+                      <Pill tone="success" icon={h.handoff === "delivered" ? "truck" : "check"}>
+                        {h.handoff === "delivered" ? "Delivered" : "Picked up"}{" "}
+                        {fmtDate(h.pickupDate)}
+                      </Pill>
                     ) : (
-                      <Pill tone="neutral">Not picked up</Pill>
+                      <Pill tone="neutral">Not collected</Pill>
                     )}
                   </div>
                 </div>

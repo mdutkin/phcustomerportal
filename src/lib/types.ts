@@ -58,6 +58,8 @@ export interface ApiRx {
   lastFilledAt: string | null;
   pickedUp: boolean;
   pickupDate: string | null;
+  /** How it reached the patient: delivered, collected in store, or not yet. */
+  handoff: "delivered" | "picked_up" | null;
   is340b: boolean;
 }
 
@@ -78,6 +80,7 @@ export interface ApiRxDetail {
     qtyDispensed: number | null;
     pickedUp: boolean;
     pickupDate: string | null;
+    handoff: "delivered" | "picked_up" | null;
   }>;
   pendingRefillRequest: { id: string; status: string; requestedAt: string } | null;
 }
