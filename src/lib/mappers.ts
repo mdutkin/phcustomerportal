@@ -29,9 +29,15 @@ export function daysLeftFrom(lastFilledAt: string | null, daysSupply: number | n
   return Math.max(0, left);
 }
 
+// Status is phrased as the ACTION the patient can take, not just a diagnosis of
+// their supply. Saying "Out of medication" next to "2 of 2 refills" reads as a
+// contradiction and gives them nothing to do — if refills are authorised, the
+// answer is simply "refill it".
 function derivedStatus(rx: ApiRx, daysLeft: number | null): { status: string; tone: StatusTone } {
+  // No refills authorised: only the prescriber can help.
   if (rx.refillsRemaining <= 0) return { status: "No refills left", tone: "danger" };
-  if (daysLeft !== null && daysLeft <= 0) return { status: "Out of medication", tone: "danger" };
+  // Supply has run out, but refills are available → actionable, and urgent.
+  if (daysLeft !== null && daysLeft <= 0) return { status: "Refill now", tone: "danger" };
   if (daysLeft !== null && daysLeft <= 7) return { status: "Refill soon", tone: "warning" };
   return { status: "Active", tone: "success" };
 }
