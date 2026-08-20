@@ -67,16 +67,19 @@ export interface ApiRx {
   is340b: boolean;
 }
 
+export interface ApiDelivery {
+  address: string | null;
+  instructions: string | null;
+  requestedDate: string | null;
+  deliveredDate: string | null;
+  driver: string | null;
+  trackingNo: string | null;
+}
+
 export interface ApiRxDetail {
   rx: ApiRx;
-  delivery: {
-    address: string | null;
-    instructions: string | null;
-    requestedDate: string | null;
-    deliveredDate: string | null;
-    driver: string | null;
-    trackingNo: string | null;
-  } | null;
+  /** Delivery for the latest fill only — refills can go to different places. */
+  delivery: ApiDelivery | null;
   prescriber: {
     presno: number;
     firstName: string | null;
@@ -96,6 +99,7 @@ export interface ApiRxDetail {
     pickupTime: string | null;
     dispensed: boolean;
     filedReason: string | null;
+    delivery: ApiDelivery | null;
   }>;
   pendingRefillRequest: { id: string; status: string; requestedAt: string } | null;
 }

@@ -258,6 +258,11 @@ export default function PrescriptionDetail() {
                       Filled {fmtDate(h.filledAt)}
                       {h.qtyDispensed ? ` · ${h.qtyDispensed} dispensed` : ""}
                     </div>
+                    {h.handoff === "delivered" && h.delivery?.address ? (
+                      <div className="list-meta" style={{ marginTop: 2 }}>
+                        <Icon name="map-pin" /> {h.delivery.address}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="list-right">
                     {h.pickedUp ? (
@@ -282,7 +287,9 @@ export default function PrescriptionDetail() {
 
         <div className="col-stack">
           {rx.handoff ? (
-            <Card title={rx.handoff === "delivered" ? "Delivery" : "Pickup"}>
+            <Card
+              title={rx.handoff === "delivered" ? "Latest delivery" : "Latest pickup"}
+            >
               <div style={{ padding: 20 }}>
                 <div className="kv">
                   <span className="k">{rx.handoff === "delivered" ? "Delivered" : "Picked up"}</span>
