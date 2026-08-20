@@ -70,11 +70,14 @@ export const claimPatient = (lastName: string, dob: string) =>
 
 // ─── Prescriptions ────────────────────────────────────────────────────────
 
-export const listPrescriptions = () => json<ApiRx[]>("/prescriptions");
+// The API wraps this one in an envelope: { items: [...] }. Unwrap it here so
+// callers get a plain array like every other list endpoint.
+export const listPrescriptions = async (): Promise<ApiRx[]> =>
+  (await json<{ items: ApiRx[] }>("/prescriptions")).items ?? [];
 export const getPrescription = (rxno: string) => json<ApiRxDetail>(`/prescriptions/${rxno}`);
 
 export const requestRefill = (rxno: string, patientNote?: string) =>
-  json<{ id: string }>(`/prescriptions/${rxno}/refill`, {
+  json<{ status: "queued"; refillRequestId: string; rxno: string }>(`/prescriptions/${rxno}/refill`, {
     method: "POST",
     body: JSON.stringify(patientNote ? { patientNote } : {}),
   });

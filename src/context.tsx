@@ -98,7 +98,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const rows = await listPrescriptions();
       setPrescriptions(rows.map(apiRxToPrescription));
-    } catch {
+    } catch (e) {
+      // Don't let a failed fetch masquerade as "you have no prescriptions" —
+      // that exact silence hid an envelope-shape mismatch here before.
+      // eslint-disable-next-line no-console
+      console.error("failed to load prescriptions", e);
       setPrescriptions([]);
     } finally {
       setRxLoading(false);
