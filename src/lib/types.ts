@@ -68,6 +68,9 @@ export interface ApiRxDetail {
     firstName: string | null;
     lastName: string | null;
     npi: string | null;
+    phone: string | null;
+    fax: string | null;
+    email: string | null;
   } | null;
   history: Array<{
     refillNo: number;
