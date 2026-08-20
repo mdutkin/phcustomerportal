@@ -1,6 +1,8 @@
-// Prescriptions list — active vs. past, split from real PrimeRX data.
-// Active  = still has refills remaining.
-// Past    = refills exhausted (needs a new prescription).
+// Prescriptions list — current vs. past, split from real PrimeRX data.
+// Current = dispensed within the last ~6 months (what the patient is on now).
+// Past    = older, or filed/deferred and never dispensed.
+// Running out of refills does NOT move a medication to Past — it stays current
+// and its status pill says it needs a renewal.
 // Both tabs get an explicit empty state; nothing here is mock.
 
 import { useState } from "react";
@@ -42,8 +44,15 @@ export default function Prescriptions() {
   const { prescriptions, rxLoading } = useApp();
   const [filter, setFilter] = useState<Filter>("active");
 
-  const active = prescriptions.filter((m) => m.refillsRemaining > 0);
-  const past = prescriptions.filter((m) => m.refillsRemaining <= 0);
+  // Current = actually dispensed, recently. Filed/deferred scripts were never
+  // handed over, so they're history, not medication.
+  const isCurrent = (m: (typeof prescriptions)[number]) => {
+    if (m.dispensed === false || !m.lastFilledIso) return false;
+    const t = new Date(m.lastFilledIso).getTime();
+    return !Number.isNaN(t) && Date.now() - t <= 180 * 86_400_000;
+  };
+  const active = prescriptions.filter(isCurrent);
+  const past = prescriptions.filter((m) => !isCurrent(m));
 
   return (
     <main className="page" data-screen-label="Prescriptions">
@@ -60,7 +69,7 @@ export default function Prescriptions() {
       <div className="row-spread" style={{ marginBottom: 16 }}>
         <Seg<Filter>
           options={[
-            { value: "active", label: `Active (${active.length})` },
+            { value: "active", label: `Current (${active.length})` },
             { value: "past", label: `Past (${past.length})` },
           ]}
           value={filter}
@@ -126,7 +135,7 @@ export default function Prescriptions() {
                 </div>
               </div>
               <div className="list-right">
-                <Pill tone="neutral">No refills left</Pill>
+                <Pill tone="neutral">{m.dispensed === false ? m.status : "No refills left"}</Pill>
               </div>
             </div>
           ))

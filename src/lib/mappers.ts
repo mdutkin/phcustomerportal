@@ -34,12 +34,31 @@ export function daysLeftFrom(lastFilledAt: string | null, daysSupply: number | n
 // contradiction and gives them nothing to do — if refills are authorised, the
 // answer is simply "refill it".
 function derivedStatus(rx: ApiRx, daysLeft: number | null): { status: string; tone: StatusTone } {
+  // Filed/deferred by the pharmacy — on file, but never dispensed. Say so
+  // plainly (with the reason when we have one) instead of implying it's a live
+  // medication the patient is taking.
+  if (!rx.dispensed) {
+    return { status: rx.filedReason ? `On file — ${rx.filedReason.toLowerCase()}` : "Not dispensed", tone: "neutral" };
+  }
   // No refills authorised: only the prescriber can help.
   if (rx.refillsRemaining <= 0) return { status: "No refills left", tone: "danger" };
   // Supply has run out, but refills are available → actionable, and urgent.
   if (daysLeft !== null && daysLeft <= 0) return { status: "Refill now", tone: "danger" };
   if (daysLeft !== null && daysLeft <= 7) return { status: "Refill soon", tone: "warning" };
   return { status: "Active", tone: "success" };
+}
+
+/**
+ * Is this still part of the patient's current regimen? Refills remaining is the
+ * wrong axis — a medication filled three weeks ago with its last refill used is
+ * very much current, it just needs the prescriber to renew it. Recency of the
+ * last real dispense is what actually separates "I take this" from history.
+ */
+export function isCurrentMedication(rx: ApiRx, windowDays = 180): boolean {
+  if (!rx.dispensed || !rx.lastFilledAt) return false;
+  const filled = new Date(rx.lastFilledAt).getTime();
+  if (Number.isNaN(filled)) return false;
+  return Date.now() - filled <= windowDays * DAY_MS;
 }
 
 export function apiRxToPrescription(rx: ApiRx): Prescription {
@@ -64,6 +83,9 @@ export function apiRxToPrescription(rx: ApiRx): Prescription {
     rxNumber: rx.rxno,
     prescriber: "", // not on the claim row; detail endpoint has it
     purpose: "", // PrimeRX doesn't carry an indication here
+    dispensed: rx.dispensed,
+    filedReason: rx.filedReason,
+    lastFilledIso: rx.lastFilledAt,
     status,
     statusTone: tone,
     price: 0, // pricing isn't exposed to patients yet
