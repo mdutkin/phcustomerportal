@@ -14,6 +14,14 @@ import { useApp } from "@/context";
 
 type Filter = "active" | "past";
 
+/** Pickup/delivery happens a day or two after the fill — show the real date. */
+function fmtDate(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
 function EmptyState({ icon, title, note }: { icon: IconName; title: string; note: string }) {
   return (
     <div
@@ -99,6 +107,13 @@ export default function Prescriptions() {
                     {m.qtyPerFill} {m.form}s ·{" "}
                     {m.sig.replace("Take ", "").replace(" by mouth", "")} · Rx# {m.rxNumber}
                   </div>
+                  {m.handoff ? (
+                    <div className="list-meta" style={{ marginTop: 2 }}>
+                      <Icon name={m.handoff === "delivered" ? "truck" : "check"} />{" "}
+                      {m.handoff === "delivered" ? "Delivered" : "Picked up"}{" "}
+                      {fmtDate(m.pickupDateIso) || m.lastFilled}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="list-right">
                   <Pill tone={m.statusTone}>{m.status}</Pill>
@@ -131,7 +146,10 @@ export default function Prescriptions() {
                   {m.name} {m.strength}
                 </div>
                 <div className="list-meta">
-                  Last filled {m.lastFilled} · Rx# {m.rxNumber}
+                  {m.handoff
+                    ? `${m.handoff === "delivered" ? "Delivered" : "Picked up"} ${fmtDate(m.pickupDateIso) || m.lastFilled}`
+                    : `Last filled ${m.lastFilled}`}{" "}
+                  · Rx# {m.rxNumber}
                 </div>
               </div>
               <div className="list-right">

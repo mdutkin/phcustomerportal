@@ -32,6 +32,10 @@ export interface Prescription {
   filedReason?: string | null;
   /** Raw last-fill date (ISO), for recency logic. */
   lastFilledIso?: string | null;
+  /** How the most recent fill reached the patient. */
+  handoff?: "delivered" | "picked_up" | null;
+  pickupDateIso?: string | null;
+  pickupTime?: string | null;
   id: string;
   name: string;
   strength: string;

@@ -23,6 +23,15 @@ function fmtDate(iso: string | null): string {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
+/** PrimeRX stores "02:41:19 PM"; drop the seconds and the leading zero. */
+function fmtTime(raw: string | null | undefined): string | null {
+  const t = (raw ?? "").trim();
+  if (!t) return null;
+  const m = t.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*([AP]M)?$/i);
+  if (!m) return t;
+  return `${String(Number(m[1]))}:${m[2]}${m[3] ? ` ${m[3].toUpperCase()}` : ""}`;
+}
+
 function fmtPhone(raw: string | null): string {
   const d = (raw ?? "").replace(/\D/g, "").slice(-10);
   if (d.length !== 10) return raw?.trim() || "—";
@@ -107,7 +116,7 @@ export default function PrescriptionDetail() {
     );
   }
 
-  const { rx, prescriber, history, pendingRefillRequest } = detail;
+  const { rx, delivery, prescriber, history, pendingRefillRequest } = detail;
   const title = [rx.drugName, rx.drugStrength].filter(Boolean).join(" ") || `Rx ${rx.rxno}`;
   const daysLeft = daysLeftFrom(rx.lastFilledAt, rx.daysSupply);
   const canRefill = rx.refillsRemaining > 0 && !pendingRefillRequest;
@@ -255,6 +264,7 @@ export default function PrescriptionDetail() {
                       <Pill tone="success" icon={h.handoff === "delivered" ? "truck" : "check"}>
                         {h.handoff === "delivered" ? "Delivered" : "Picked up"}{" "}
                         {fmtDate(h.pickupDate)}
+                        {fmtTime(h.pickupTime) ? `, ${fmtTime(h.pickupTime)}` : ""}
                       </Pill>
                     ) : (
                       <Pill tone="neutral">Not collected</Pill>
@@ -271,6 +281,52 @@ export default function PrescriptionDetail() {
         </div>
 
         <div className="col-stack">
+          {rx.handoff ? (
+            <Card title={rx.handoff === "delivered" ? "Delivery" : "Pickup"}>
+              <div style={{ padding: 20 }}>
+                <div className="kv">
+                  <span className="k">{rx.handoff === "delivered" ? "Delivered" : "Picked up"}</span>
+                  <span className="v">
+                    {fmtDate(rx.pickupDate)}
+                    {fmtTime(rx.pickupTime) ? ` at ${fmtTime(rx.pickupTime)}` : ""}
+                  </span>
+                  {rx.handoff === "delivered" && delivery?.address ? (
+                    <>
+                      <span className="k">Address</span>
+                      <span className="v">{delivery.address}</span>
+                    </>
+                  ) : null}
+                  {rx.handoff === "delivered" && delivery?.driver ? (
+                    <>
+                      <span className="k">Driver</span>
+                      <span className="v">{delivery.driver}</span>
+                    </>
+                  ) : null}
+                  {delivery?.instructions ? (
+                    <>
+                      <span className="k">Instructions</span>
+                      <span className="v">{delivery.instructions}</span>
+                    </>
+                  ) : null}
+                  {delivery?.trackingNo ? (
+                    <>
+                      <span className="k">Tracking</span>
+                      <span className="v">{delivery.trackingNo}</span>
+                    </>
+                  ) : null}
+                </div>
+                <div className="muted" style={{ fontSize: 13, marginTop: 14 }}>
+                  Something wrong with this {rx.handoff === "delivered" ? "delivery" : "pickup"}?
+                  Call us at{" "}
+                  <a className="link" style={{ display: "inline" }} href="tel:8183441111">
+                    (818) 344-1111
+                  </a>
+                  .
+                </div>
+              </div>
+            </Card>
+          ) : null}
+
           <Card title="Prescriber">
             <div style={{ padding: 20 }}>
               {prescriber && (prescriberName || prescriber.npi) ? (

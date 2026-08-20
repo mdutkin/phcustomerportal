@@ -86,6 +86,9 @@ export function apiRxToPrescription(rx: ApiRx): Prescription {
     dispensed: rx.dispensed,
     filedReason: rx.filedReason,
     lastFilledIso: rx.lastFilledAt,
+    handoff: rx.handoff,
+    pickupDateIso: rx.pickupDate,
+    pickupTime: rx.pickupTime,
     status,
     statusTone: tone,
     price: 0, // pricing isn't exposed to patients yet

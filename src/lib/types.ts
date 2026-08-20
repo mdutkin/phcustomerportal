@@ -60,6 +60,7 @@ export interface ApiRx {
   pickupDate: string | null;
   /** How it reached the patient: delivered, collected in store, or not yet. */
   handoff: "delivered" | "picked_up" | null;
+  pickupTime: string | null;
   /** False when PrimeRX filed/deferred it instead of dispensing. */
   dispensed: boolean;
   filedReason: string | null;
@@ -68,6 +69,14 @@ export interface ApiRx {
 
 export interface ApiRxDetail {
   rx: ApiRx;
+  delivery: {
+    address: string | null;
+    instructions: string | null;
+    requestedDate: string | null;
+    deliveredDate: string | null;
+    driver: string | null;
+    trackingNo: string | null;
+  } | null;
   prescriber: {
     presno: number;
     firstName: string | null;
@@ -84,6 +93,7 @@ export interface ApiRxDetail {
     pickedUp: boolean;
     pickupDate: string | null;
     handoff: "delivered" | "picked_up" | null;
+    pickupTime: string | null;
     dispensed: boolean;
     filedReason: string | null;
   }>;
