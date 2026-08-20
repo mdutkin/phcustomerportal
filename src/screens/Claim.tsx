@@ -97,7 +97,7 @@ export default function Claim() {
                 <p className="muted" style={{ fontSize: 14, margin: 0 }}>
                   Give us a call and we'll get you set up in a minute.
                 </p>
-                <a className="link" href={`tel:${PHARMACY_PHONE.replace(/\D/g, "")}`}>
+                <a className="link" href={`tel:${PHARMACY_TEL}`}>
                   <Icon name="smartphone" /> {PHARMACY_PHONE}
                 </a>
               </div>
@@ -136,7 +136,7 @@ export default function Claim() {
 
               <p className="muted" style={{ fontSize: 13, textAlign: "center", margin: 0 }}>
                 Not finding you? Call us at{" "}
-                <a className="link" style={{ display: "inline" }} href={`tel:${PHARMACY_PHONE.replace(/\D/g, "")}`}>
+                <a className="link" style={{ display: "inline" }} href={`tel:${PHARMACY_TEL}`}>
                   {PHARMACY_PHONE}
                 </a>
               </p>
