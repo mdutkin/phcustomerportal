@@ -54,7 +54,36 @@ export default function Login() {
     }
   };
 
+  /** Fill the boxes from a pasted/autofilled code, then submit if complete. */
+  const fillFrom = (digits: string, startAt = 0) => {
+    const clean = digits.replace(/\D/g, "");
+    if (!clean) return;
+    const next = [...otp];
+    for (let k = 0; k < clean.length && startAt + k < 6; k++) next[startAt + k] = clean[k]!;
+    setOtp(next);
+    const landed = Math.min(startAt + clean.length, 5);
+    document.getElementById(`otp-${landed}`)?.focus();
+    if (next.every((x) => x.length === 1)) void verifyCode(next.join(""));
+  };
+
+  // Backspace on an empty box steps back to the previous one, so correcting a
+  // typo doesn't mean clicking around.
+  const handleOtpKeyDown = (i: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !otp[i] && i > 0) {
+      e.preventDefault();
+      const next = [...otp];
+      next[i - 1] = "";
+      setOtp(next);
+      document.getElementById(`otp-${i - 1}`)?.focus();
+    }
+  };
+
   const handleOtpChange = (i: number, v: string) => {
+    // A paste (or SMS autofill) lands as a multi-character value.
+    if (v.replace(/\D/g, "").length > 1) {
+      fillFrom(v, i);
+      return;
+    }
     const next = [...otp];
     next[i] = v.replace(/\D/g, "").slice(0, 1);
     setOtp(next);
@@ -104,7 +133,13 @@ export default function Login() {
           </p>
 
           {!otpStep && (
-            <div className="login-form">
+            <form
+              className="login-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void handleSendCode();
+              }}
+            >
               <Field
                 label="Mobile phone number"
                 hint="We'll send a 6-digit code by text. Standard rates apply."
@@ -117,6 +152,8 @@ export default function Login() {
                     className="input"
                     type="tel"
                     inputMode="tel"
+                    autoComplete="tel-national"
+                    autoFocus
                     placeholder="(555) 555-0100"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -124,19 +161,25 @@ export default function Login() {
                 </div>
               </Field>
               <Button
+                type="submit"
                 variant="primary"
                 size="lg"
                 block
-                onClick={handleSendCode}
                 disabled={phone.replace(/\D/g, "").length < 10 || busy}
               >
                 {busy ? "Sending…" : "Send code"}
               </Button>
-            </div>
+            </form>
           )}
 
           {otpStep && (
-            <div className="login-form">
+            <form
+              className="login-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void verifyCode(otp.join(""));
+              }}
+            >
               <Field label="Enter the 6-digit code">
                 <div className="otp-row">
                   {otp.map((v, i) => (
@@ -145,9 +188,16 @@ export default function Login() {
                       id={`otp-${i}`}
                       className="otp-input"
                       inputMode="numeric"
-                      maxLength={1}
+                      autoComplete={i === 0 ? "one-time-code" : "off"}
+                      autoFocus={i === 0}
                       value={v}
                       onChange={(e) => handleOtpChange(i, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        fillFrom(e.clipboardData.getData("text"), i);
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   ))}
                 </div>
@@ -163,15 +213,10 @@ export default function Login() {
                   · <a className="link" style={{ display: "inline" }}>Resend code</a>
                 </p>
               </Field>
-              <Button
-                variant="secondary"
-                block
-                disabled={busy}
-                onClick={() => void verifyCode(otp.join(""))}
-              >
+              <Button type="submit" variant="secondary" block disabled={busy}>
                 {busy ? "Verifying…" : "Verify and continue"}
               </Button>
-            </div>
+            </form>
           )}
 
           <div className="login-trust">
