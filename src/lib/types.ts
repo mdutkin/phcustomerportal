@@ -59,7 +59,7 @@ export interface ApiRx {
   pickedUp: boolean;
   pickupDate: string | null;
   /** How it reached the patient: delivered, collected in store, or not yet. */
-  handoff: "delivered" | "picked_up" | null;
+  handoff: "delivered" | "picked_up" | "awaiting_delivery" | null;
   pickupTime: string | null;
   /** False when PrimeRX filed/deferred it instead of dispensing. */
   dispensed: boolean;
@@ -95,7 +95,7 @@ export interface ApiRxDetail {
     qtyDispensed: number | null;
     pickedUp: boolean;
     pickupDate: string | null;
-    handoff: "delivered" | "picked_up" | null;
+    handoff: "delivered" | "picked_up" | "awaiting_delivery" | null;
     pickupTime: string | null;
     dispensed: boolean;
     filedReason: string | null;

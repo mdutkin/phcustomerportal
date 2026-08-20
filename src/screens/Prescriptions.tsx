@@ -107,7 +107,11 @@ export default function Prescriptions() {
                     {m.qtyPerFill} {m.form}s ·{" "}
                     {m.sig.replace("Take ", "").replace(" by mouth", "")} · Rx# {m.rxNumber}
                   </div>
-                  {m.handoff ? (
+                  {m.handoff === "awaiting_delivery" ? (
+                    <div className="list-meta" style={{ marginTop: 2, color: "var(--brand-700, inherit)" }}>
+                      <Icon name="truck" /> Scheduled for delivery
+                    </div>
+                  ) : m.handoff ? (
                     <div className="list-meta" style={{ marginTop: 2 }}>
                       <Icon name={m.handoff === "delivered" ? "truck" : "check"} />{" "}
                       {m.handoff === "delivered" ? "Delivered" : "Picked up"}{" "}
@@ -146,9 +150,11 @@ export default function Prescriptions() {
                   {m.name} {m.strength}
                 </div>
                 <div className="list-meta">
-                  {m.handoff
-                    ? `${m.handoff === "delivered" ? "Delivered" : "Picked up"} ${fmtDate(m.pickupDateIso) || m.lastFilled}`
-                    : `Last filled ${m.lastFilled}`}{" "}
+                  {m.handoff === "awaiting_delivery"
+                    ? "Scheduled for delivery"
+                    : m.handoff
+                      ? `${m.handoff === "delivered" ? "Delivered" : "Picked up"} ${fmtDate(m.pickupDateIso) || m.lastFilled}`
+                      : `Last filled ${m.lastFilled}`}{" "}
                   · Rx# {m.rxNumber}
                 </div>
               </div>

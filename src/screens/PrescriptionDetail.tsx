@@ -288,16 +288,31 @@ export default function PrescriptionDetail() {
         <div className="col-stack">
           {rx.handoff ? (
             <Card
-              title={rx.handoff === "delivered" ? "Latest delivery" : "Latest pickup"}
+              title={
+                rx.handoff === "awaiting_delivery"
+                  ? "Delivery"
+                  : rx.handoff === "delivered"
+                    ? "Latest delivery"
+                    : "Latest pickup"
+              }
             >
               <div style={{ padding: 20 }}>
                 <div className="kv">
-                  <span className="k">{rx.handoff === "delivered" ? "Delivered" : "Picked up"}</span>
+                  <span className="k">Status</span>
                   <span className="v">
-                    {fmtDate(rx.pickupDate)}
-                    {fmtTime(rx.pickupTime) ? ` at ${fmtTime(rx.pickupTime)}` : ""}
+                    {rx.handoff === "awaiting_delivery" ? (
+                      <Pill tone="info" icon="truck">
+                        Scheduled for delivery
+                      </Pill>
+                    ) : (
+                      <>
+                        {rx.handoff === "delivered" ? "Delivered " : "Picked up "}
+                        {fmtDate(rx.pickupDate)}
+                        {fmtTime(rx.pickupTime) ? ` at ${fmtTime(rx.pickupTime)}` : ""}
+                      </>
+                    )}
                   </span>
-                  {rx.handoff === "delivered" && delivery?.address ? (
+                  {rx.handoff !== "picked_up" && delivery?.address ? (
                     <>
                       <span className="k">Address</span>
                       <span className="v">{delivery.address}</span>
@@ -323,7 +338,7 @@ export default function PrescriptionDetail() {
                   ) : null}
                 </div>
                 <div className="muted" style={{ fontSize: 13, marginTop: 14 }}>
-                  Something wrong with this {rx.handoff === "delivered" ? "delivery" : "pickup"}?
+                  Something wrong with this {rx.handoff === "picked_up" ? "pickup" : "delivery"}?
                   Call us at{" "}
                   <a className="link" style={{ display: "inline" }} href="tel:8183441111">
                     (818) 344-1111
