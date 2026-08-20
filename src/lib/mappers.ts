@@ -7,6 +7,7 @@
 
 import type { Patient, Prescription, StatusTone } from "../data";
 import type { ApiRx, Me } from "./types";
+import { PHARMACY_FULL } from "./pharmacy";
 
 const DAY_MS = 86_400_000;
 
@@ -149,7 +150,7 @@ export function apiMeToPatient(me: Me): Patient {
     return {
       name: "—", initials: "–", dob: "—", age: 0, phone: "—", email: me.user.email ?? "—",
       address: "—", insurance: { plan: "—", member: "—", group: "—" },
-      pharmacy: "Medico Pharmacy", prescriber: "", allergies: [],
+      pharmacy: PHARMACY_FULL, prescriber: "", allergies: [],
     };
   }
   const first = p.firstName?.trim() ?? "";
@@ -169,7 +170,7 @@ export function apiMeToPatient(me: Me): Patient {
       member: p.primaryMemberNo?.trim() || "—",
       group: p.primaryGroupNo?.trim() || "—",
     },
-    pharmacy: "Medico Pharmacy",
+    pharmacy: PHARMACY_FULL,
     prescriber: "",
     allergies: splitAllergies(p.allergies),
   };

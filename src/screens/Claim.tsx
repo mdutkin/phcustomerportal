@@ -15,7 +15,9 @@ import { useApp } from "@/context";
 import { claimPatient } from "@/lib/api";
 import { ApiError } from "@/lib/api";
 
-const PHARMACY_PHONE = "(818) 344-1111";
+import { PHARMACY, PHARMACY_TEL } from "@/lib/pharmacy";
+
+const PHARMACY_PHONE = PHARMACY.phone;
 
 export default function Claim() {
   const { refreshMe, signOut, firebaseUser } = useApp();

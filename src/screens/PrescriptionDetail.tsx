@@ -15,6 +15,7 @@ import { useApp } from "@/context";
 import { ApiError, getPrescription, requestRefill } from "@/lib/api";
 import type { ApiRxDetail } from "@/lib/types";
 import { daysLeftFrom } from "@/lib/mappers";
+import { PHARMACY, PHARMACY_TEL } from "@/lib/pharmacy";
 
 function fmtDate(iso: string | null): string {
   if (!iso) return "—";
@@ -340,8 +341,8 @@ export default function PrescriptionDetail() {
                 <div className="muted" style={{ fontSize: 13, marginTop: 14 }}>
                   Something wrong with this {rx.handoff === "picked_up" ? "pickup" : "delivery"}?
                   Call us at{" "}
-                  <a className="link" style={{ display: "inline" }} href="tel:8183441111">
-                    (818) 344-1111
+                  <a className="link" style={{ display: "inline" }} href={`tel:${PHARMACY_TEL}`}>
+                    {PHARMACY.phone}
                   </a>
                   .
                 </div>
