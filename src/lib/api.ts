@@ -26,8 +26,12 @@ async function authHeader(): Promise<Record<string, string>> {
 }
 
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  // Only declare a JSON content-type when we're actually sending JSON. Fastify
+  // rejects a request that announces application/json but carries no body
+  // (FST_ERR_CTP_EMPTY_JSON_BODY), which silently broke every body-less POST
+  // such as cancelling a request.
   const headers = {
-    "Content-Type": "application/json",
+    ...(init.body !== undefined ? { "Content-Type": "application/json" } : {}),
     ...(init.headers as Record<string, string> | undefined),
     ...(await authHeader()),
   };

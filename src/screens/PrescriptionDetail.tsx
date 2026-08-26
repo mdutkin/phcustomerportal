@@ -12,7 +12,7 @@ import { Banner, Button, Card, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
 import { PageHeader } from "@/components/Layout";
 import { useApp } from "@/context";
-import { ApiError, getPrescription, requestRefill } from "@/lib/api";
+import { ApiError, cancelRequest, getPrescription, requestRefill } from "@/lib/api";
 import type { ApiRxDetail } from "@/lib/types";
 import { daysLeftFrom } from "@/lib/mappers";
 import { PHARMACY, PHARMACY_TEL } from "@/lib/pharmacy";
@@ -70,6 +70,7 @@ export default function PrescriptionDetail() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [refilling, setRefilling] = useState(false);
+  const [canceling, setCanceling] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -142,6 +143,29 @@ export default function PrescriptionDetail() {
       }
     } finally {
       setRefilling(false);
+    }
+  };
+
+  // Only possible while the request is still pending — once a pharmacist has
+  // claimed it the server refuses, and we surface that rather than pretending.
+  const onCancelRefill = async () => {
+    if (!pendingRefillRequest || canceling) return;
+    setCanceling(true);
+    try {
+      await cancelRequest(pendingRefillRequest.id);
+      pushToast("Refill request canceled.");
+      await load();
+      void refreshPrescriptions();
+    } catch (e) {
+      const err = e as ApiError;
+      pushToast(
+        err.code === "request_not_cancelable"
+          ? "The pharmacy has already started on this request — call us if you need to stop it."
+          : err.message || "Couldn't cancel that request. Please try again.",
+      );
+      await load();
+    } finally {
+      setCanceling(false);
     }
   };
 
