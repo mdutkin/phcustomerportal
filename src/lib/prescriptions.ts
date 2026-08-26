@@ -52,3 +52,35 @@ export function selectRecentlyReceived(all: Prescription[], limit = 3): Prescrip
     .sort((a, b) => (b.pickupDateIso ?? "").localeCompare(a.pickupDateIso ?? ""))
     .slice(0, limit);
 }
+
+
+/**
+ * How much attention does this need? Lower sorts first.
+ *
+ * A dashboard should answer "what do I need to do?", so order by what the
+ * patient can act on rather than by what was filled most recently — otherwise
+ * the list is dominated by whatever happened to be dispensed last, which is
+ * usually the thing needing the least attention.
+ */
+export function attentionRank(m: Prescription): number {
+  if (m.handoff === "ready_for_pickup") return 0; // go and collect it
+  if (m.handoff === "awaiting_delivery") return 1; // on its way
+  if (m.dispensed === false) return 6; // never dispensed — least useful here
+  const out = m.daysLeft != null && m.daysLeft <= 0;
+  if (m.refillsRemaining > 0 && out) return 2; // out of supply, can refill now
+  if (m.refillsRemaining > 0 && m.daysLeft != null && m.daysLeft <= 7) return 3; // running low
+  if (m.refillsRemaining <= 0) return 4; // needs a renewal from the prescriber
+  return 5; // comfortably supplied
+}
+
+/** Current medications, most-needing-attention first. */
+export function selectByAttention(all: Prescription[]): Prescription[] {
+  return [...selectCurrent(all)].sort((a, b) => {
+    const r = attentionRank(a) - attentionRank(b);
+    if (r !== 0) return r;
+    // Within a band, whoever runs out soonest comes first.
+    const ad = a.daysLeft ?? Number.MAX_SAFE_INTEGER;
+    const bd = b.daysLeft ?? Number.MAX_SAFE_INTEGER;
+    return ad - bd;
+  });
+}

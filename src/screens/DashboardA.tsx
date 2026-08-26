@@ -14,6 +14,7 @@ import {
   selectOutForDelivery,
   selectReadyForPickup,
   selectRecentlyReceived,
+  selectByAttention,
   selectRefillable,
 } from "@/lib/prescriptions";
 
@@ -34,6 +35,7 @@ export default function DashboardA() {
   const outForDelivery = selectOutForDelivery(prescriptions);
   const readyForPickup = selectReadyForPickup(prescriptions);
   const recent = selectRecentlyReceived(prescriptions, 3);
+  const byAttention = selectByAttention(prescriptions);
 
   const firstName = patient.name.split(" ")[0] ?? "";
   const summary = rxLoading
@@ -138,13 +140,13 @@ export default function DashboardA() {
           title="Your medications"
           action={
             <button className="link" onClick={() => nav("/prescriptions")} type="button">
-              View all <Icon name="arrow-right" />
+              {current.length > 4 ? `View all ${current.length}` : "View all"} <Icon name="arrow-right" />
             </button>
           }
         >
           {current.length > 0 ? (
             <div role="list">
-              {current.slice(0, 4).map((m) => (
+              {byAttention.slice(0, 4).map((m) => (
                 <MedicationRow
                   key={m.id}
                   med={{
