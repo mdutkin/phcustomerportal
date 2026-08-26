@@ -33,7 +33,7 @@ export interface Prescription {
   /** Raw last-fill date (ISO), for recency logic. */
   lastFilledIso?: string | null;
   /** How the most recent fill reached the patient. */
-  handoff?: "delivered" | "picked_up" | "awaiting_delivery" | null;
+  handoff?: "delivered" | "picked_up" | "awaiting_delivery" | "ready_for_pickup" | null;
   pickupDateIso?: string | null;
   pickupTime?: string | null;
   id: string;

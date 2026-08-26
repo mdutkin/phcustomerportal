@@ -101,7 +101,11 @@ export default function Prescriptions() {
                     {m.qtyPerFill} {m.form}s ·{" "}
                     {m.sig.replace("Take ", "").replace(" by mouth", "")} · Rx# {m.rxNumber}
                   </div>
-                  {m.handoff === "awaiting_delivery" ? (
+                  {m.handoff === "ready_for_pickup" ? (
+                    <div className="list-meta" style={{ marginTop: 2 }}>
+                      <Icon name="package" /> Ready to collect at {"Medico Pharmacy"}
+                    </div>
+                  ) : m.handoff === "awaiting_delivery" ? (
                     <div className="list-meta" style={{ marginTop: 2, color: "var(--brand-700, inherit)" }}>
                       <Icon name="truck" /> Scheduled for delivery
                     </div>

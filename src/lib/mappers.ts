@@ -41,6 +41,14 @@ function derivedStatus(rx: ApiRx, daysLeft: number | null): { status: string; to
   if (!rx.dispensed) {
     return { status: rx.filedReason ? `On file — ${rx.filedReason.toLowerCase()}` : "Not dispensed", tone: "neutral" };
   }
+  // Waiting at the counter — the most actionable thing we can tell a patient,
+  // so it outranks any refill messaging.
+  if (rx.handoff === "ready_for_pickup") {
+    return { status: "Ready for pickup", tone: "info" };
+  }
+  if (rx.handoff === "awaiting_delivery") {
+    return { status: "Out for delivery", tone: "info" };
+  }
   // No refills authorised: only the prescriber can help.
   if (rx.refillsRemaining <= 0) return { status: "No refills left", tone: "danger" };
   // Supply has run out, but refills are available → actionable, and urgent.

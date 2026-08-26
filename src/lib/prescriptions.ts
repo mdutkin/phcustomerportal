@@ -37,6 +37,10 @@ export const selectRefillable = (all: Prescription[]) =>
 export const selectNeedsRenewal = (all: Prescription[]) =>
   selectCurrent(all).filter((m) => m.refillsRemaining <= 0);
 
+/** Filled, billed and sitting on the shelf waiting to be collected. */
+export const selectReadyForPickup = (all: Prescription[]) =>
+  all.filter((m) => m.handoff === "ready_for_pickup");
+
 /** Fills that are on a delivery run but haven't been handed over yet. */
 export const selectOutForDelivery = (all: Prescription[]) =>
   all.filter((m) => m.handoff === "awaiting_delivery");

@@ -12,6 +12,7 @@ import {
   selectCurrent,
   selectNeedsRenewal,
   selectOutForDelivery,
+  selectReadyForPickup,
   selectRecentlyReceived,
   selectRefillable,
 } from "@/lib/prescriptions";
@@ -31,6 +32,7 @@ export default function DashboardA() {
   const refillable = selectRefillable(prescriptions);
   const needsRenewal = selectNeedsRenewal(prescriptions);
   const outForDelivery = selectOutForDelivery(prescriptions);
+  const readyForPickup = selectReadyForPickup(prescriptions);
   const recent = selectRecentlyReceived(prescriptions, 3);
 
   const firstName = patient.name.split(" ")[0] ?? "";
@@ -42,6 +44,7 @@ export default function DashboardA() {
           `You're on <b>${current.length} medication${current.length === 1 ? "" : "s"}</b>`,
           refillable.length > 0 ? `<b>${refillable.length}</b> can be refilled` : null,
           needsRenewal.length > 0 ? `<b>${needsRenewal.length}</b> need a renewal` : null,
+          readyForPickup.length > 0 ? `<b>${readyForPickup.length}</b> ready to collect` : null,
           outForDelivery.length > 0 ? `<b>${outForDelivery.length}</b> on the way` : null,
         ]
           .filter(Boolean)
@@ -63,6 +66,21 @@ export default function DashboardA() {
           </div>
         }
       />
+
+      {readyForPickup.length > 0 ? (
+        <Banner
+          tone="success"
+          icon="package"
+          title={`${readyForPickup.length} prescription${readyForPickup.length === 1 ? " is" : "s are"} ready for pickup.`}
+          action={
+            <Button variant="secondary" size="sm" onClick={() => nav("/prescriptions")}>
+              View
+            </Button>
+          }
+        >
+          {readyForPickup.map((m) => m.name).join(", ")} — waiting for you at the pharmacy.
+        </Banner>
+      ) : null}
 
       {/* Only shown when something is genuinely on a delivery run. */}
       {outForDelivery.length > 0 ? (
@@ -95,6 +113,14 @@ export default function DashboardA() {
           label="Need a renewal"
           value={needsRenewal.length}
           sub="no refills left"
+          onClick={() => nav("/prescriptions")}
+        />
+        <StatTile
+          icon="package"
+          iconTone={readyForPickup.length > 0 ? "success" : "brand"}
+          label="Ready for pickup"
+          value={readyForPickup.length}
+          sub={readyForPickup.length > 0 ? "waiting at the pharmacy" : "nothing waiting"}
           onClick={() => nav("/prescriptions")}
         />
         <StatTile
