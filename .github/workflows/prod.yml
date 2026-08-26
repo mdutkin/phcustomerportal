@@ -1,0 +1,71 @@
+name: DEPLOY
+
+# Static build -> /var/www/medico-patients on the CCCHC box (medico-patients.tropa.io).
+# nginx serves the directory directly; there is no service to restart.
+#
+# Build-time config comes from .env.production committed here plus the Firebase
+# web keys below. Those keys are NOT secrets — Firebase web config is public by
+# design and is already visible in the shipped bundle; access is controlled by
+# Firebase Auth rules and our API's token verification, not by hiding them.
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # `npm ci` honours the lockfile. --include=dev because vite/tsc are devDeps.
+      - name: Install dependencies
+        run: npm ci --include=dev
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        env:
+          VITE_FIREBASE_API_KEY: AIzaSyDjPc9ApYcbphrEBr_L1qnBwPrk4JwpAAM
+          VITE_FIREBASE_AUTH_DOMAIN: medico-patients.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: medico-patients
+          VITE_FIREBASE_APP_ID: 1:177562391299:web:753b6af65a38f0a4494f36
+          VITE_API_URL: /api
+        run: npm run build
+
+      # Guard against shipping a dev build: the emulator must never be wired up
+      # in production, and no LAN address should survive into the bundle.
+      - name: Verify the bundle is a production build
+        run: |
+          if grep -rq "connectAuthEmulator" dist/assets/*.js; then
+            echo "::error::Firebase auth emulator is referenced in the production bundle"; exit 1
+          fi
+          if grep -rqE "192\.168\.|127\.0\.0\.1|localhost:[0-9]+" dist/assets/*.js; then
+            echo "::error::A local address leaked into the production bundle"; exit 1
+          fi
+          echo "bundle looks clean"
+
+      - name: rsync web app
+        uses: burnett01/rsync-deployments@7.1.0
+        with:
+          switches: -avzr --delete
+          path: dist/
+          remote_path: /var/www/medico-patients/
+          remote_host: medico-patients.tropa.io
+          remote_port: 22
+          remote_user: max
+          remote_key: ${{ secrets.SSH_PK }}
+
+      - name: Smoke test
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 https://medico-patients.tropa.io/)
+          echo "portal returned $code"
+          test "$code" = "200"
