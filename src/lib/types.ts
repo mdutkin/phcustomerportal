@@ -66,6 +66,10 @@ export interface ApiRx {
   filedReason: string | null;
   /** Set when the pharmacy has asked the prescriber to renew and is waiting. */
   renewalRequestedAt: string | null;
+  /** The pharmacy's own refill-due date, when they track this Rx. */
+  refillDueDate: string | null;
+  /** Signed: negative means the patient ran out that many days ago. */
+  refillDaysRemaining: number | null;
   is340b: boolean;
 }
 

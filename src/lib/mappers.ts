@@ -34,7 +34,11 @@ export function daysLeftFrom(lastFilledAt: string | null, daysSupply: number | n
 // their supply. Saying "Out of medication" next to "2 of 2 refills" reads as a
 // contradiction and gives them nothing to do — if refills are authorised, the
 // answer is simply "refill it".
-function derivedStatus(rx: ApiRx, daysLeft: number | null): { status: string; tone: StatusTone } {
+function derivedStatus(
+  rx: ApiRx,
+  daysLeft: number | null,
+  daysOverdue: number | null,
+): { status: string; tone: StatusTone } {
   // Filed/deferred by the pharmacy — on file, but never dispensed. Say so
   // plainly (with the reason when we have one) instead of implying it's a live
   // medication the patient is taking.
@@ -58,6 +62,11 @@ function derivedStatus(rx: ApiRx, daysLeft: number | null): { status: string; to
       : { status: "No refills left", tone: "danger" };
   }
   // Supply has run out, but refills are available → actionable, and urgent.
+  // Say HOW overdue when the pharmacy tracks it: "ran out 34 days ago" is a
+  // different conversation from "time to reorder".
+  if (daysOverdue !== null && daysOverdue > 0) {
+    return { status: `Ran out ${daysOverdue} day${daysOverdue === 1 ? "" : "s"} ago`, tone: "danger" };
+  }
   if (daysLeft !== null && daysLeft <= 0) return { status: "Refill now", tone: "danger" };
   if (daysLeft !== null && daysLeft <= 7) return { status: "Refill soon", tone: "warning" };
   return { status: "Active", tone: "success" };
@@ -77,8 +86,24 @@ export function isCurrentMedication(rx: ApiRx, windowDays = 180): boolean {
 }
 
 export function apiRxToPrescription(rx: ApiRx): Prescription {
-  const daysLeft = daysLeftFrom(rx.lastFilledAt, rx.daysSupply);
-  const { status, tone } = derivedStatus(rx, daysLeft);
+  // Prefer the pharmacy's own refill-due calculation over ours: it accounts for
+  // quantity remaining and pickup thresholds, and it's the number staff see, so
+  // the patient and the counter can't disagree about a date. Fall back to our
+  // derived value for prescriptions they don't track.
+  const theirDays = rx.refillDaysRemaining;
+  const daysLeft =
+    theirDays != null ? Math.max(0, theirDays) : daysLeftFrom(rx.lastFilledAt, rx.daysSupply);
+  // Their number is signed — negative means already run out. Ours clamps at zero,
+  // which discards the most useful adherence signal we have.
+  //
+  // BUT only for medication the patient is actually on. RefDueView keeps tracking
+  // superseded Rx numbers, so an old generation of a drug the patient still takes
+  // under a NEWER Rx reports things like -230 days. Telling someone they ran out
+  // eight months ago of something they collected last month is worse than saying
+  // nothing, so overdue is scoped to current medications.
+  const daysOverdue =
+    theirDays != null && theirDays < 0 && isCurrentMedication(rx) ? Math.abs(theirDays) : null;
+  const { status, tone } = derivedStatus(rx, daysLeft, daysOverdue);
   return {
     id: rx.rxno,
     name: rx.drugName ?? "Prescription",
@@ -90,10 +115,12 @@ export function apiRxToPrescription(rx: ApiRx): Prescription {
     refillsRemaining: rx.refillsRemaining,
     refillsTotal: rx.refillsTotal,
     daysLeft,
-    nextRefillDate:
-      rx.lastFilledAt && rx.daysSupply
+    nextRefillDate: rx.refillDueDate
+      ? fmtDate(rx.refillDueDate)
+      : rx.lastFilledAt && rx.daysSupply
         ? fmtDate(addDays(rx.lastFilledAt, rx.daysSupply).toISOString())
         : "—",
+    daysOverdue,
     lastFilled: fmtDate(rx.lastFilledAt),
     rxNumber: rx.rxno,
     prescriber: "", // not on the claim row; detail endpoint has it

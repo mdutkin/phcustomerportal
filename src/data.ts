@@ -31,6 +31,8 @@ export interface Prescription {
   dispensed?: boolean;
   filedReason?: string | null;
   renewalRequestedAt?: string | null;
+  /** Days past the pharmacy's refill-due date. Null unless actually overdue. */
+  daysOverdue?: number | null;
   /** Raw last-fill date (ISO), for recency logic. */
   lastFilledIso?: string | null;
   /** How the most recent fill reached the patient. */
