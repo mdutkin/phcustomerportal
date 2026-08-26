@@ -313,6 +313,12 @@ export default function PrescriptionDetail() {
                       </>
                     )}
                   </span>
+                  {rx.handoff === "awaiting_delivery" && delivery?.requestedDate ? (
+                    <>
+                      <span className="k">Expected</span>
+                      <span className="v">{fmtDate(delivery.requestedDate)}</span>
+                    </>
+                  ) : null}
                   {rx.handoff !== "picked_up" && delivery?.address ? (
                     <>
                       <span className="k">Address</span>
