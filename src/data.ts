@@ -57,18 +57,6 @@ export interface Prescription {
   price: number;
 }
 
-export interface Delivery {
-  id: string;
-  date: string;
-  when: string;
-  time: string;
-  items: string;
-  status: string;
-  statusTone: StatusTone;
-  dot: "filled" | "muted" | "open";
-  driver?: string;
-}
-
 export interface MessageSummary {
   id: string;
   from: string;
@@ -154,14 +142,6 @@ export const PRESCRIPTIONS: Prescription[] = [
     purpose: "Vitamin D supplementation",
     status: "Active", statusTone: "neutral", price: 5.40,
   },
-];
-
-export const DELIVERIES: Delivery[] = [
-  { id: "d1", date: "Today, May 4", when: "Today",     time: "2:00 – 4:00 PM",     items: "Atorvastatin 20 mg · 1 item",          status: "Out for delivery", statusTone: "info",    dot: "filled", driver: "Maria T." },
-  { id: "d2", date: "Fri, May 9",   when: "Fri, May 9", time: "Standard window",   items: "Lisinopril 10 mg · 1 item",            status: "Scheduled",        statusTone: "neutral", dot: "muted" },
-  { id: "d3", date: "Mon, May 12",  when: "Mon, May 12",time: "Standard window",   items: "Metformin 500 mg · 2 items",           status: "Scheduled",        statusTone: "neutral", dot: "muted" },
-  { id: "d4", date: "Apr 26, 2026", when: "Apr 26",    time: "Delivered 3:14 PM", items: "Metformin 500 mg",                     status: "Delivered",        statusTone: "success", dot: "filled" },
-  { id: "d5", date: "Apr 7, 2026",  when: "Apr 7",     time: "Delivered 10:42 AM",items: "Amlodipine 5 mg · Atorvastatin 20 mg", status: "Delivered",        statusTone: "success", dot: "filled" },
 ];
 
 export const MESSAGES: MessageSummary[] = [

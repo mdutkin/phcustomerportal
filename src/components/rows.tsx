@@ -1,4 +1,4 @@
-// MedicationRow, DeliveryItem — list-item primitives.
+// MedicationRow — list-item primitive.
 
 import type { Prescription, StatusTone } from "@/data";
 import { Icon } from "./Icon";
@@ -34,36 +34,3 @@ export function MedicationRow({ med, onClick }: MedicationRowProps) {
   );
 }
 
-// ────────────── Delivery item
-
-interface DeliveryItemProps {
-  when: string;
-  items: string;
-  time: string;
-  status: string;
-  statusTone: StatusTone;
-  dotState?: "filled" | "muted" | "open";
-}
-
-export function DeliveryItem({ when, items, time, status, statusTone, dotState = "filled" }: DeliveryItemProps) {
-  return (
-    <div className="delivery">
-      <div className="timeline">
-        <span
-          className={`timeline-dot ${dotState === "filled" ? "filled" : dotState === "muted" ? "muted" : ""}`}
-        />
-        <span className="timeline-line" />
-      </div>
-      <div className="delivery-main">
-        <div className="delivery-row1">
-          <span className="delivery-when">{when}</span>
-          <span className="delivery-time">{time}</span>
-        </div>
-        <div className="delivery-items">{items}</div>
-        <div className="delivery-status">
-          <Pill tone={statusTone as PillTone}>{status}</Pill>
-        </div>
-      </div>
-    </div>
-  );
-}

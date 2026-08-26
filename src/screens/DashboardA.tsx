@@ -1,130 +1,177 @@
-// Dashboard layout A — stat-tile grid with two-column lists.
+// Dashboard — everything here comes from the patient's real prescription data.
+// Counts use the shared selectors so this screen can never disagree with the
+// prescriptions list about what "current" means.
 
 import { useNavigate } from "react-router-dom";
-import { Banner, Button, Card, StatTile } from "@/components/ui";
+import { Banner, Button, Card, Pill, StatTile } from "@/components/ui";
 import { Icon } from "@/components/Icon";
-import { MedicationRow, DeliveryItem } from "@/components/rows";
+import { MedicationRow } from "@/components/rows";
 import { PageHeader } from "@/components/Layout";
-import { DELIVERIES } from "@/data";
 import { useApp } from "@/context";
+import {
+  selectCurrent,
+  selectNeedsRenewal,
+  selectOutForDelivery,
+  selectRecentlyReceived,
+  selectRefillable,
+} from "@/lib/prescriptions";
+
+function fmtDate(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 export default function DashboardA() {
   const nav = useNavigate();
-  const { patient, prescriptions } = useApp();
-  const readyToRefill = prescriptions.filter(
-    (m) => m.statusTone === "success" || m.statusTone === "warning",
-  ).length;
-  const visible = prescriptions.slice(0, 4);
+  const { patient, prescriptions, rxLoading } = useApp();
+
+  const current = selectCurrent(prescriptions);
+  const refillable = selectRefillable(prescriptions);
+  const needsRenewal = selectNeedsRenewal(prescriptions);
+  const outForDelivery = selectOutForDelivery(prescriptions);
+  const recent = selectRecentlyReceived(prescriptions, 3);
+
+  const firstName = patient.name.split(" ")[0] ?? "";
+  const summary = rxLoading
+    ? "Loading your prescriptions…"
+    : current.length === 0
+      ? "No current prescriptions on file."
+      : [
+          `You're on <b>${current.length} medication${current.length === 1 ? "" : "s"}</b>`,
+          refillable.length > 0 ? `<b>${refillable.length}</b> can be refilled` : null,
+          needsRenewal.length > 0 ? `<b>${needsRenewal.length}</b> need a renewal` : null,
+          outForDelivery.length > 0 ? `<b>${outForDelivery.length}</b> on the way` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ") + ".";
 
   return (
-    <main className="page" data-screen-label="Dashboard A">
+    <main className="page" data-screen-label="Dashboard">
       <PageHeader
-        title={`Good morning, ${patient.name.split(" ")[0]}`}
-        sub={`You have <b>${readyToRefill} prescriptions</b> ready to refill and <b>1 delivery</b> arriving today.`}
+        title={`Hello, ${firstName}`}
+        sub={summary}
         action={
           <div className="row">
-            <Button
-              variant="secondary"
-              leadingIcon="message-square"
-              onClick={() => nav("/messages")}
-            >
+            <Button variant="secondary" leadingIcon="message-square" onClick={() => nav("/messages")}>
               Contact pharmacy
             </Button>
-            <Button
-              variant="primary"
-              leadingIcon="plus"
-              onClick={() => nav("/prescriptions")}
-            >
+            <Button variant="primary" leadingIcon="plus" onClick={() => nav("/prescriptions")}>
               Request refill
             </Button>
           </div>
         }
       />
 
-      <Banner
-        tone="info"
-        icon="info"
-        title="Lisinopril refill ready for pickup."
-        action={
-          <Button variant="secondary" size="sm" onClick={() => nav("/rx/lisin")}>
-            View
-          </Button>
-        }
-      >
-        Available at Maple St. Pharmacy until Friday, May 8 — or schedule delivery.
-      </Banner>
+      {/* Only shown when something is genuinely on a delivery run. */}
+      {outForDelivery.length > 0 ? (
+        <Banner
+          tone="info"
+          icon="truck"
+          title={`${outForDelivery.length} prescription${outForDelivery.length === 1 ? " is" : "s are"} on the way.`}
+          action={
+            <Button variant="secondary" size="sm" onClick={() => nav("/prescriptions")}>
+              View
+            </Button>
+          }
+        >
+          {outForDelivery.map((m) => m.name).join(", ")} — we'll let you know once delivered.
+        </Banner>
+      ) : null}
 
       <div className="stat-grid">
         <StatTile
           icon="pill"
           iconTone="brand"
-          label="Active prescriptions"
-          value={prescriptions.length}
-          sub={`<b>${readyToRefill}</b> ready to refill`}
+          label="Current medications"
+          value={current.length}
+          sub={`<b>${refillable.length}</b> ready to refill`}
           onClick={() => nav("/prescriptions")}
         />
         <StatTile
-          icon="package"
-          iconTone="warning"
-          label="In transit"
-          value="1"
-          sub="arriving <b>today</b>, 2:00–4:00 PM"
+          icon="refresh-cw"
+          iconTone={needsRenewal.length > 0 ? "warning" : "brand"}
+          label="Need a renewal"
+          value={needsRenewal.length}
+          sub="no refills left"
+          onClick={() => nav("/prescriptions")}
+        />
+        <StatTile
+          icon="truck"
+          iconTone={outForDelivery.length > 0 ? "info" : "brand"}
+          label="Out for delivery"
+          value={outForDelivery.length}
+          sub={outForDelivery.length > 0 ? "on a delivery run" : "nothing in transit"}
           onClick={() => nav("/prescriptions")}
         />
       </div>
 
       <div className="cols">
         <Card
-          title="Your prescriptions"
+          title="Your medications"
           action={
             <button className="link" onClick={() => nav("/prescriptions")} type="button">
               View all <Icon name="arrow-right" />
             </button>
           }
         >
-          <div role="list">
-            {visible.map((m) => (
-              <MedicationRow
-                key={m.id}
-                med={{
-                  ...m,
-                  displayName: `${m.name} ${m.strength}`,
-                  displaySig: `${m.qtyPerFill} ${m.form}s · ${m.sig
-                    .replace("Take ", "")
-                    .replace(" by mouth", "")}`,
-                }}
-                onClick={() => nav(`/rx/${m.id}`)}
-              />
-            ))}
-          </div>
+          {current.length > 0 ? (
+            <div role="list">
+              {current.slice(0, 4).map((m) => (
+                <MedicationRow
+                  key={m.id}
+                  med={{
+                    ...m,
+                    displayName: `${m.name} ${m.strength}`,
+                    displaySig: `${m.qtyPerFill} ${m.form}s · ${m.sig
+                      .replace("Take ", "")
+                      .replace(" by mouth", "")}`,
+                  }}
+                  onClick={() => nav(`/rx/${m.id}`)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: 20 }} className="muted">
+              {rxLoading ? "Loading…" : "Nothing on file yet."}
+            </div>
+          )}
         </Card>
 
         <div className="col-stack">
-          <Card
-            title="Upcoming deliveries"
-            action={
-              <button
-                className="link"
-                onClick={() => nav("/prescriptions")}
-                type="button"
-              >
-                Track all <Icon name="arrow-right" />
-              </button>
-            }
-          >
-            {DELIVERIES.slice(0, 3).map((d) => (
-              <DeliveryItem
-                key={d.id}
-                when={d.when}
-                time={d.time}
-                items={d.items}
-                status={d.status}
-                statusTone={d.statusTone}
-                dotState={d.dot}
-              />
-            ))}
+          <Card title="Recent deliveries">
+            {recent.length > 0 ? (
+              recent.map((m) => (
+                <div key={m.id} className="list-row" onClick={() => nav(`/rx/${m.id}`)}>
+                  <span
+                    className="rx-tile"
+                    style={{ background: "var(--slate-100)", color: "var(--fg-3)" }}
+                  >
+                    <Icon name={m.handoff === "delivered" ? "truck" : "check"} />
+                  </span>
+                  <div className="list-main">
+                    <div className="list-name">
+                      {m.name} {m.strength}
+                    </div>
+                    <div className="list-meta">
+                      {m.handoff === "delivered" ? "Delivered" : "Picked up"}{" "}
+                      {fmtDate(m.pickupDateIso)}
+                    </div>
+                  </div>
+                  <div className="list-right">
+                    <Pill tone="success">
+                      {m.handoff === "delivered" ? "Delivered" : "Collected"}
+                    </Pill>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ padding: 20 }} className="muted">
+                {rxLoading ? "Loading…" : "No deliveries yet."}
+              </div>
+            )}
           </Card>
-
         </div>
       </div>
     </main>

@@ -11,6 +11,7 @@ import { Button, Card, Pill, Seg } from "@/components/ui";
 import { Icon, type IconName } from "@/components/Icon";
 import { PageHeader } from "@/components/Layout";
 import { useApp } from "@/context";
+import { selectCurrent, selectPast } from "@/lib/prescriptions";
 
 type Filter = "active" | "past";
 
@@ -52,15 +53,8 @@ export default function Prescriptions() {
   const { prescriptions, rxLoading } = useApp();
   const [filter, setFilter] = useState<Filter>("active");
 
-  // Current = actually dispensed, recently. Filed/deferred scripts were never
-  // handed over, so they're history, not medication.
-  const isCurrent = (m: (typeof prescriptions)[number]) => {
-    if (m.dispensed === false || !m.lastFilledIso) return false;
-    const t = new Date(m.lastFilledIso).getTime();
-    return !Number.isNaN(t) && Date.now() - t <= 180 * 86_400_000;
-  };
-  const active = prescriptions.filter(isCurrent);
-  const past = prescriptions.filter((m) => !isCurrent(m));
+  const active = selectCurrent(prescriptions);
+  const past = selectPast(prescriptions);
 
   return (
     <main className="page" data-screen-label="Prescriptions">
