@@ -64,6 +64,8 @@ export interface ApiRx {
   /** False when PrimeRX filed/deferred it instead of dispensing. */
   dispensed: boolean;
   filedReason: string | null;
+  /** Set when the pharmacy has asked the prescriber to renew and is waiting. */
+  renewalRequestedAt: string | null;
   is340b: boolean;
 }
 

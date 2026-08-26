@@ -49,8 +49,14 @@ function derivedStatus(rx: ApiRx, daysLeft: number | null): { status: string; to
   if (rx.handoff === "awaiting_delivery") {
     return { status: "Out for delivery", tone: "info" };
   }
-  // No refills authorised: only the prescriber can help.
-  if (rx.refillsRemaining <= 0) return { status: "No refills left", tone: "danger" };
+  // No refills authorised: only the prescriber can help. If the pharmacy has
+  // already asked them, say so — otherwise the patient chases something that's
+  // already in flight.
+  if (rx.refillsRemaining <= 0) {
+    return rx.renewalRequestedAt
+      ? { status: "Renewal requested", tone: "info" }
+      : { status: "No refills left", tone: "danger" };
+  }
   // Supply has run out, but refills are available → actionable, and urgent.
   if (daysLeft !== null && daysLeft <= 0) return { status: "Refill now", tone: "danger" };
   if (daysLeft !== null && daysLeft <= 7) return { status: "Refill soon", tone: "warning" };
@@ -94,6 +100,7 @@ export function apiRxToPrescription(rx: ApiRx): Prescription {
     purpose: "", // PrimeRX doesn't carry an indication here
     dispensed: rx.dispensed,
     filedReason: rx.filedReason,
+    renewalRequestedAt: rx.renewalRequestedAt,
     lastFilledIso: rx.lastFilledAt,
     handoff: rx.handoff,
     pickupDateIso: rx.pickupDate,

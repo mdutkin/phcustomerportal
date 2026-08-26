@@ -30,6 +30,7 @@ export interface Prescription {
   /** False when the pharmacy filed/deferred it rather than dispensing. */
   dispensed?: boolean;
   filedReason?: string | null;
+  renewalRequestedAt?: string | null;
   /** Raw last-fill date (ISO), for recency logic. */
   lastFilledIso?: string | null;
   /** How the most recent fill reached the patient. */

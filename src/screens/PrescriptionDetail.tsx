@@ -374,7 +374,9 @@ export default function PrescriptionDetail() {
               <div className="muted" style={{ fontSize: 14 }}>
                 {rx.refillsRemaining > 0
                   ? "Requesting a refill sends it to our pharmacists. They'll prepare it and let you know when it's ready."
-                  : "This prescription has no refills left. Your prescriber needs to authorise a new one — give us a call and we'll chase it for you."}
+                  : rx.renewalRequestedAt
+                    ? `No refills left — we asked ${prescriberName || "your prescriber"} for a renewal on ${fmtDate(rx.renewalRequestedAt)} and are waiting to hear back. We'll fill it as soon as they authorise it.`
+                    : "This prescription has no refills left. Your prescriber needs to authorise a new one — give us a call and we'll chase it for you."}
               </div>
               <Button
                 variant={canRefill ? "primary" : "secondary"}
