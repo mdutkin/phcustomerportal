@@ -12,6 +12,7 @@ import {
 import type { Toast } from "./components/ui";
 import { auth } from "./lib/firebase";
 import { signOutUser } from "./lib/auth";
+import { PHARMACY } from "./lib/pharmacy";
 import { ApiError, getMe, listPrescriptions, requestRefill } from "./lib/api";
 import { apiMeToPatient, apiRxToPrescription } from "./lib/mappers";
 import type { Me } from "./lib/types";
@@ -134,7 +135,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setPrescriptions((cur) =>
         cur.map((m) => (m.id === id ? { ...m, status: "Refill requested", statusTone: "info" } : m)),
       );
-      pushToast("Refill requested — the pharmacy will confirm shortly.");
+      // Deliberately does NOT promise that anyone has picked it up: the request
+      // lands in our queue and a pharmacist actions it in PrimeRX by hand, so
+      // give them the phone number rather than implying it's already in progress.
+      pushToast(`Sent to the pharmacy. If you need it urgently, call ${PHARMACY.phone}.`);
     } catch (e) {
       const err = e as ApiError;
       if (err.code === "request_already_pending") {

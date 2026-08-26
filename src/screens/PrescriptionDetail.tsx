@@ -127,7 +127,7 @@ export default function PrescriptionDetail() {
     setRefilling(true);
     try {
       await requestRefill(rx.rxno);
-      pushToast("Refill requested — the pharmacy will confirm shortly.");
+      pushToast(`Sent to the pharmacy. If you need it urgently, call ${PHARMACY.phone}.`);
       await load();
       void refreshPrescriptions();
     } catch (e) {
