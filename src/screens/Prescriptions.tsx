@@ -50,8 +50,22 @@ function EmptyState({ icon, title, note }: { icon: IconName; title: string; note
 
 export default function Prescriptions() {
   const nav = useNavigate();
-  const { prescriptions, rxLoading } = useApp();
+  const { prescriptions, rxLoading, refillRx } = useApp();
   const [filter, setFilter] = useState<Filter>("active");
+  const [refilling, setRefilling] = useState<string | null>(null);
+
+  // A refill always belongs to a specific prescription, so the action lives on
+  // the row rather than behind a page-level button that can't know which one.
+  const onRefill = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); // don't also navigate into the detail page
+    if (refilling) return;
+    setRefilling(id);
+    try {
+      await refillRx(id);
+    } finally {
+      setRefilling(null);
+    }
+  };
 
   const active = selectCurrent(prescriptions);
   const past = selectPast(prescriptions);
@@ -60,12 +74,7 @@ export default function Prescriptions() {
     <main className="page" data-screen-label="Prescriptions">
       <PageHeader
         title="Prescriptions"
-        sub="Refill, schedule delivery, and review every medication you've been prescribed."
-        action={
-          <Button variant="primary" leadingIcon="plus">
-            Request new refill
-          </Button>
-        }
+        sub="Refill a medication, or review everything you've been prescribed."
       />
 
       <div className="row-spread" style={{ marginBottom: 16 }}>
@@ -124,6 +133,17 @@ export default function Prescriptions() {
                       ? `${m.daysLeft} days left · ${m.refillsRemaining} of ${m.refillsTotal} refills`
                       : `${m.refillsRemaining} of ${m.refillsTotal} refills`}
                   </span>
+                  {m.refillsRemaining > 0 && m.dispensed !== false ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      leadingIcon="refresh-cw"
+                      disabled={refilling === m.id}
+                      onClick={(e) => void onRefill(e, m.id)}
+                    >
+                      {refilling === m.id ? "Requesting…" : "Refill"}
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             ))

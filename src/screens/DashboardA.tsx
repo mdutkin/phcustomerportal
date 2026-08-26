@@ -62,9 +62,15 @@ export default function DashboardA() {
             <Button variant="secondary" leadingIcon="message-square" onClick={() => nav("/messages")}>
               Contact pharmacy
             </Button>
-            <Button variant="primary" leadingIcon="plus" onClick={() => nav("/prescriptions")}>
-              Request refill
-            </Button>
+            {refillable.length > 0 ? (
+              <Button
+                variant="primary"
+                leadingIcon="refresh-cw"
+                onClick={() => nav("/prescriptions")}
+              >
+                Refill a medication
+              </Button>
+            ) : null}
           </div>
         }
       />
