@@ -133,7 +133,7 @@ export default function Prescriptions() {
                       ? `${m.daysLeft} days left · ${m.refillsRemaining} of ${m.refillsTotal} refills`
                       : `${m.refillsRemaining} of ${m.refillsTotal} refills`}
                   </span>
-                  {m.refillsRemaining > 0 && m.dispensed !== false ? (
+                  {m.refillsRemaining > 0 && m.dispensed !== false && !(m.deaClass ?? 0) ? (
                     <Button
                       variant="secondary"
                       size="sm"

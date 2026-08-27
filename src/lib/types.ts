@@ -62,6 +62,8 @@ export interface ApiRx {
   handoff: "delivered" | "picked_up" | "awaiting_delivery" | "ready_for_pickup" | null;
   pickupTime: string | null;
   /** False when PrimeRX filed/deferred it instead of dispensing. */
+  /** DEA schedule: 0 = not controlled, 2..5 = CII..CV. */
+  deaClass: number;
   dispensed: boolean;
   filedReason: string | null;
   /** Set when the pharmacy has asked the prescriber to renew and is waiting. */

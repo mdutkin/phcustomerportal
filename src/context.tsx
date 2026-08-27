@@ -141,7 +141,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       pushToast(`Sent to the pharmacy. If you need it urgently, call ${PHARMACY.phone}.`);
     } catch (e) {
       const err = e as ApiError;
-      if (err.code === "request_already_pending") {
+      if (err.code === "controlled_substance") {
+        pushToast(err.message);
+      } else if (err.code === "request_already_pending") {
         pushToast("You've already requested a refill for this prescription.");
       } else if (err.code === "no_refills_remaining") {
         pushToast("No refills left — your prescriber needs to authorise a new one.");

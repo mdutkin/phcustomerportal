@@ -30,6 +30,8 @@ export interface Prescription {
   /** False when the pharmacy filed/deferred it rather than dispensing. */
   dispensed?: boolean;
   filedReason?: string | null;
+  /** DEA schedule: 0 = not controlled, 2..5 = CII..CV. */
+  deaClass?: number;
   renewalRequestedAt?: string | null;
   /** Days past the pharmacy's refill-due date. Null unless actually overdue. */
   daysOverdue?: number | null;

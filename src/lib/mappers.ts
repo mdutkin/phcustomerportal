@@ -53,6 +53,12 @@ function derivedStatus(
   if (rx.handoff === "awaiting_delivery") {
     return { status: "Out for delivery", tone: "info" };
   }
+  // Controlled medication is never a self-service refill: CII carries no refills
+  // in law, and CIII-CV renewals need the prescriber contacted directly. Say so
+  // instead of offering an action we'd refuse.
+  if ((rx.deaClass ?? 0) > 0) {
+    return { status: "Call the pharmacy", tone: "warning" };
+  }
   // No refills authorised: only the prescriber can help. If the pharmacy has
   // already asked them, say so — otherwise the patient chases something that's
   // already in flight.
@@ -127,6 +133,7 @@ export function apiRxToPrescription(rx: ApiRx): Prescription {
     purpose: "", // PrimeRX doesn't carry an indication here
     dispensed: rx.dispensed,
     filedReason: rx.filedReason,
+    deaClass: rx.deaClass,
     renewalRequestedAt: rx.renewalRequestedAt,
     lastFilledIso: rx.lastFilledAt,
     handoff: rx.handoff,
