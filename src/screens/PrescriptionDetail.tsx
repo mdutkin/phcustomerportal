@@ -122,7 +122,7 @@ export default function PrescriptionDetail() {
   const title = [rx.drugName, rx.drugStrength].filter(Boolean).join(" ") || `Rx ${rx.rxno}`;
   const daysLeft = daysLeftFrom(rx.lastFilledAt, rx.daysSupply);
   const isControlled = (rx.deaClass ?? 0) > 0;
-  const canRefill = rx.refillsRemaining > 0 && !pendingRefillRequest && !isControlled;
+  const canRefill = rx.refillsRemaining > 0 && !pendingRefillRequest;
 
   const onRefill = async () => {
     if (!canRefill || refilling) return;
@@ -403,8 +403,8 @@ export default function PrescriptionDetail() {
           <Card title="Need a refill?">
             <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
               <div className="muted" style={{ fontSize: 14 }}>
-                {isControlled
-                  ? `This is a controlled medication, so refills can't be requested online — we have to speak to your prescriber. Please call us on ${PHARMACY.phone}.`
+                {rx.refillsRemaining <= 0 && isControlled
+                  ? `This is a controlled medication with no refills left, so we have to speak to your prescriber before it can be renewed — that can't be done online. Please call us on ${PHARMACY.phone}.`
                   : rx.refillsRemaining > 0
                   ? "Requesting a refill sends it to our pharmacists. They'll prepare it and let you know when it's ready."
                   : rx.renewalRequestedAt

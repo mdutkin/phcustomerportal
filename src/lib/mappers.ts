@@ -53,11 +53,11 @@ function derivedStatus(
   if (rx.handoff === "awaiting_delivery") {
     return { status: "Out for delivery", tone: "info" };
   }
-  // Controlled medication is never a self-service refill: CII carries no refills
-  // in law, and CIII-CV renewals need the prescriber contacted directly. Say so
-  // instead of offering an action we'd refuse.
-  if ((rx.deaClass ?? 0) > 0) {
-    return { status: "Call the pharmacy", tone: "warning" };
+  // Spending an authorised refill is fine for any prescription, controlled or
+  // not. It's the RENEWAL that differs: a controlled medication with no refills
+  // left needs the prescriber contacted, so it can't become a routine request.
+  if (rx.refillsRemaining <= 0 && (rx.deaClass ?? 0) > 0) {
+    return { status: "Call to renew", tone: "warning" };
   }
   // No refills authorised: only the prescriber can help. If the pharmacy has
   // already asked them, say so — otherwise the patient chases something that's
