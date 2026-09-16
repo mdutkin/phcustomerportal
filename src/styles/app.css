@@ -433,10 +433,10 @@ a { color: inherit; }
 .login-attrib { font-size: 14px; color: var(--fg-3); margin-top: 18px; }
 
 .login-stats {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;
   max-width: 480px;
 }
-.login-stat-num { font-size: 24px; font-weight: 700; color: var(--fg-1); font-variant-numeric: tabular-nums; }
+.login-stat-num { font-size: 20px; font-weight: 700; color: var(--fg-1); font-variant-numeric: tabular-nums; }
 .login-stat-lbl { font-size: 12px; color: var(--fg-3); margin-top: 4px; }
 
 .login-main {

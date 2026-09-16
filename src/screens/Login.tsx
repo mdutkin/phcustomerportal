@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import type { ConfirmationResult } from "firebase/auth";
 import logo from "@/assets/medico-logo.svg";
 import { Button, Field } from "@/components/ui";
+import { PHARMACY, PHARMACY_TEL } from "@/lib/pharmacy";
 import { Icon } from "@/components/Icon";
 import { useApp } from "@/context";
 import { sendSmsCode, confirmSmsCode } from "@/lib/auth";
@@ -102,24 +103,29 @@ export default function Login() {
         </div>
         <div className="stack-lg">
           <h2 className="login-quote">
-            Your prescriptions, lab results, and pharmacy <em>in one calm place</em>.
+            Your prescriptions and your pharmacy <em>in one calm place</em>.
           </h2>
           <p className="login-attrib">
-            Used by 2.4 million patients across 1,200 pharmacies in the U.S.
+            Request refills, track deliveries and pickups, and see your full
+            prescription history — straight from {PHARMACY.name}.
           </p>
         </div>
+        {/* One real pharmacy, so we show its real details — not made-up
+            network-scale numbers a single store can't honestly claim. */}
         <div className="login-stats">
           <div>
-            <div className="login-stat-num tabular">2.4M</div>
-            <div className="login-stat-lbl">Active patients</div>
+            <div className="login-stat-num">{PHARMACY.addressLine1}</div>
+            <div className="login-stat-lbl">
+              {PHARMACY.city}, {PHARMACY.state} {PHARMACY.zip}
+            </div>
           </div>
           <div>
-            <div className="login-stat-num tabular">1,200+</div>
-            <div className="login-stat-lbl">Partner pharmacies</div>
-          </div>
-          <div>
-            <div className="login-stat-num tabular">98.4%</div>
-            <div className="login-stat-lbl">Refills on time</div>
+            <div className="login-stat-num">
+              <a href={`tel:${PHARMACY_TEL}`} style={{ color: "inherit", textDecoration: "none" }}>
+                {PHARMACY.phone}
+              </a>
+            </div>
+            <div className="login-stat-lbl">Call the pharmacy</div>
           </div>
         </div>
       </aside>
@@ -227,7 +233,7 @@ export default function Login() {
               <Icon name="lock" /> Encrypted at rest
             </span>
             <span>
-              <Icon name="user-check" /> SOC 2 Type II
+              <Icon name="user-check" /> Verified by your phone number
             </span>
           </div>
 
