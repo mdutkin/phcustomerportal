@@ -175,15 +175,6 @@ function fmtPhone(raw: string | null): string {
   return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
 }
 
-/** Allergies come as one free-text field; split on common separators. */
-function splitAllergies(raw: string | null): string[] {
-  if (!raw) return [];
-  return raw
-    .split(/[,;/\n]+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0 && !/^(nkda|none|n\/a)$/i.test(s));
-}
-
 function joinAddress(p: NonNullable<Me["patient"]>): string {
   const cityLine = [p.city, p.state].filter(Boolean).join(", ");
   const tail = [cityLine, p.zip].filter(Boolean).join(" ");
@@ -224,6 +215,8 @@ export function apiMeToPatient(me: Me): Patient {
     },
     pharmacy: PHARMACY_FULL,
     prescriber: "",
-    allergies: splitAllergies(p.allergies),
+    // Already resolved to names server-side (PATIENT.ALLERGY itself is a code
+    // that reads "0" for everyone — never render it).
+    allergies: p.allergies ?? [],
   };
 }

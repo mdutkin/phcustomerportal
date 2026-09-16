@@ -21,7 +21,8 @@ export interface ApiPatient {
   city: string | null;
   state: string | null;
   zip: string | null;
-  allergies: string | null;
+  /** Display names from PATIENTALLERGY / PatientOtherAllergy; empty = none recorded. */
+  allergies: string[];
   primaryInsurance: string | null;
   primaryGroupNo: string | null;
   primaryMemberNo: string | null;
