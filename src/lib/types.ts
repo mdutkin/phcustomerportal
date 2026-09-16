@@ -72,8 +72,22 @@ export interface ApiRx {
   refillDueDate: string | null;
   /** Signed: negative means the patient ran out that many days ago. */
   refillDaysRemaining: number | null;
+  /** First day the pharmacy would fill a refill (their early-refill threshold applied). */
+  refillEligibleDate: string | null;
+  /** The pharmacy's own verdict on refilling today, straight from PrimeRX. */
+  refillEligibility: RefillEligibility | null;
   is340b: boolean;
 }
+
+export type RefillEligibility =
+  | "ok"
+  | "too_early"
+  | "no_qty"
+  | "expired"
+  | "discontinued"
+  | "transferred"
+  | "controlled_not_refillable"
+  | "filed";
 
 export interface ApiDelivery {
   address: string | null;

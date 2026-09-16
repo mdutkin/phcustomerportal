@@ -11,17 +11,13 @@ import { Button, Card, Pill, Seg } from "@/components/ui";
 import { Icon, type IconName } from "@/components/Icon";
 import { PageHeader } from "@/components/Layout";
 import { useApp } from "@/context";
-import { selectCurrent, selectPast } from "@/lib/prescriptions";
+import { canRequestRefill, refillOpensLabel, selectCurrent, selectPast } from "@/lib/prescriptions";
+import { fmtDate as fmtApiDate } from "@/lib/dates";
 
 type Filter = "active" | "past";
 
 /** Pickup/delivery happens a day or two after the fill — show the real date. */
-function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-}
+const fmtDate = (iso: string | null | undefined) => fmtApiDate(iso, undefined, "");
 
 function EmptyState({ icon, title, note }: { icon: IconName; title: string; note: string }) {
   return (
@@ -133,7 +129,7 @@ export default function Prescriptions() {
                       ? `${m.daysLeft} days left · ${m.refillsRemaining} of ${m.refillsTotal} refills`
                       : `${m.refillsRemaining} of ${m.refillsTotal} refills`}
                   </span>
-                  {m.refillsRemaining > 0 && m.dispensed !== false ? (
+                  {canRequestRefill(m) ? (
                     <Button
                       variant="secondary"
                       size="sm"
@@ -143,6 +139,8 @@ export default function Prescriptions() {
                     >
                       {refilling === m.id ? "Requesting…" : "Refill"}
                     </Button>
+                  ) : refillOpensLabel(m) ? (
+                    <span className="caption">Refill from {refillOpensLabel(m)}</span>
                   ) : null}
                 </div>
               </div>

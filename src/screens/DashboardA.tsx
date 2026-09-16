@@ -18,12 +18,7 @@ import {
   selectRefillable,
 } from "@/lib/prescriptions";
 
-function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
+const fmtDate = (iso: string | null | undefined) => fmtApiDate(iso, { month: "short", day: "numeric" }, "");
 
 export default function DashboardA() {
   const nav = useNavigate();

@@ -2,6 +2,8 @@
 // Persona: Margaret Chen, 73, hypertension/cholesterol/type 2 diabetes.
 // No PHI — replace with API fetchers when the customer-portal backend lands.
 
+import type { RefillEligibility } from "./lib/types";
+
 export type StatusTone = "success" | "warning" | "danger" | "info" | "neutral" | "brand";
 export type Flag = "OK" | "H" | "L";
 
@@ -41,6 +43,10 @@ export interface Prescription {
   handoff?: "delivered" | "picked_up" | "awaiting_delivery" | "ready_for_pickup" | null;
   pickupDateIso?: string | null;
   pickupTime?: string | null;
+  /** PrimeRX's refill verdict (see RefillEligibility in lib/types). */
+  refillEligibility?: RefillEligibility | null;
+  /** ISO date the pharmacy would first fill a refill. */
+  refillEligibleIso?: string | null;
   id: string;
   name: string;
   strength: string;

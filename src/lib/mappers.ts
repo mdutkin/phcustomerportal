@@ -8,18 +8,14 @@
 import type { Patient, Prescription, StatusTone } from "../data";
 import type { ApiRx, Me } from "./types";
 import { PHARMACY_FULL } from "./pharmacy";
+import { fmtDate as fmtApiDate, parseApiDate } from "./dates";
 
 const DAY_MS = 86_400_000;
 
-function fmtDate(iso: string | null): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-}
+const fmtDate = (iso: string | null) => fmtApiDate(iso);
 
 function addDays(iso: string, days: number): Date {
-  return new Date(new Date(iso).getTime() + days * DAY_MS);
+  return new Date((parseApiDate(iso)?.getTime() ?? NaN) + days * DAY_MS);
 }
 
 /** Days of medication left, from last fill + days supply. Null if unknowable. */
@@ -53,10 +49,20 @@ function derivedStatus(
   if (rx.handoff === "awaiting_delivery") {
     return { status: "Out for delivery", tone: "info" };
   }
+  // The pharmacy's own verdicts that end the conversation regardless of the
+  // refill count — an expired or discontinued script can't be refilled even
+  // with refills "left" on paper.
+  if (rx.refillEligibility === "expired") return { status: "Expired — call to renew", tone: "warning" };
+  if (rx.refillEligibility === "discontinued") return { status: "Discontinued", tone: "neutral" };
   // Spending an authorised refill is fine for any prescription, controlled or
   // not. It's the RENEWAL that differs: a controlled medication with no refills
   // left needs the prescriber contacted, so it can't become a routine request.
-  if (rx.refillsRemaining <= 0 && (rx.deaClass ?? 0) > 0) {
+  // PrimeRX also times out controlled refills (CII never; CIII–CV 180 days
+  // after the order), which lands in the same "talk to us" bucket.
+  if (
+    (rx.refillsRemaining <= 0 && (rx.deaClass ?? 0) > 0) ||
+    rx.refillEligibility === "controlled_not_refillable"
+  ) {
     return { status: "Call to renew", tone: "warning" };
   }
   // No refills authorised: only the prescriber can help. If the pharmacy has
@@ -86,8 +92,8 @@ function derivedStatus(
  */
 export function isCurrentMedication(rx: ApiRx, windowDays = 180): boolean {
   if (!rx.dispensed || !rx.lastFilledAt) return false;
-  const filled = new Date(rx.lastFilledAt).getTime();
-  if (Number.isNaN(filled)) return false;
+  const filled = parseApiDate(rx.lastFilledAt)?.getTime();
+  if (filled == null) return false;
   return Date.now() - filled <= windowDays * DAY_MS;
 }
 
@@ -139,6 +145,8 @@ export function apiRxToPrescription(rx: ApiRx): Prescription {
     handoff: rx.handoff,
     pickupDateIso: rx.pickupDate,
     pickupTime: rx.pickupTime,
+    refillEligibility: rx.refillEligibility,
+    refillEligibleIso: rx.refillEligibleDate,
     status,
     statusTone: tone,
     price: 0, // pricing isn't exposed to patients yet
@@ -147,17 +155,12 @@ export function apiRxToPrescription(rx: ApiRx): Prescription {
 
 // ─── Patient profile ────────────────────────────────────────────────────────
 
-function fmtDateLong(iso: string | null): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
-}
+const fmtDateLong = (iso: string | null) =>
+  fmtApiDate(iso, { month: "long", day: "numeric", year: "numeric" });
 
 function ageFrom(iso: string | null): number {
-  if (!iso) return 0;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return 0;
+  const d = parseApiDate(iso);
+  if (!d) return 0;
   const now = new Date();
   let age = now.getFullYear() - d.getFullYear();
   const m = now.getMonth() - d.getMonth();

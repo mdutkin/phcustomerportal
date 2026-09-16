@@ -16,13 +16,9 @@ import { ApiError, cancelRequest, getPrescription, requestRefill } from "@/lib/a
 import type { ApiRxDetail } from "@/lib/types";
 import { daysLeftFrom } from "@/lib/mappers";
 import { PHARMACY, PHARMACY_TEL } from "@/lib/pharmacy";
+import { fmtDate as fmtApiDate } from "@/lib/dates";
 
-function fmtDate(iso: string | null): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-}
+const fmtDate = (iso: string | null) => fmtApiDate(iso);
 
 /** PrimeRX stores "02:41:19 PM"; drop the seconds and the leading zero. */
 function fmtTime(raw: string | null | undefined): string | null {
@@ -122,7 +118,29 @@ export default function PrescriptionDetail() {
   const title = [rx.drugName, rx.drugStrength].filter(Boolean).join(" ") || `Rx ${rx.rxno}`;
   const daysLeft = daysLeftFrom(rx.lastFilledAt, rx.daysSupply);
   const isControlled = (rx.deaClass ?? 0) > 0;
-  const canRefill = rx.refillsRemaining > 0 && !pendingRefillRequest;
+  // The pharmacy's own verdict (PrimeRX RefDueView) gates the button, not just
+  // the refill count: PrimeRX shows the pharmacist "N Days Early For Refill"
+  // and insurance rejects early fills, so a request before the threshold date
+  // is work nobody can act on.
+  const elig = rx.refillEligibility;
+  const tooEarly = elig === "too_early";
+  const opensOn = tooEarly && rx.refillEligibleDate ? fmtDate(rx.refillEligibleDate) : null;
+  const blockedByPharmacy =
+    tooEarly || elig === "expired" || elig === "discontinued" || elig === "controlled_not_refillable" || elig === "no_qty";
+  const canRefill = rx.refillsRemaining > 0 && !pendingRefillRequest && !blockedByPharmacy;
+  const refillLabel = pendingRefillRequest
+    ? "Refill requested"
+    : tooEarly
+      ? opensOn
+        ? `Refill from ${opensOn}`
+        : "Too early to refill"
+      : elig === "expired"
+        ? "Expired"
+        : elig === "discontinued"
+          ? "Discontinued"
+          : rx.refillsRemaining > 0 && !blockedByPharmacy
+            ? "Request refill"
+            : "No refills left";
 
   const onRefill = async () => {
     if (!canRefill || refilling) return;
@@ -188,13 +206,7 @@ export default function PrescriptionDetail() {
               onClick={onRefill}
               disabled={!canRefill || refilling}
             >
-              {refilling
-                ? "Requesting…"
-                : pendingRefillRequest
-                  ? "Refill requested"
-                  : rx.refillsRemaining > 0
-                    ? "Request refill"
-                    : "No refills left"}
+              {refilling ? "Requesting…" : refillLabel}
             </Button>
           </div>
         }
@@ -403,8 +415,14 @@ export default function PrescriptionDetail() {
           <Card title="Need a refill?">
             <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
               <div className="muted" style={{ fontSize: 14 }}>
-                {rx.refillsRemaining <= 0 && isControlled
-                  ? `This is a controlled medication with no refills left, so we have to speak to your prescriber before it can be renewed — that can't be done online. Please call us on ${PHARMACY.phone}.`
+                {tooEarly
+                  ? `It's a little early — insurance and pharmacy rules only allow a refill once most of your current supply has been used. You can request it from ${opensOn ?? "the due date"}. Running low sooner than expected, or travelling? Call us on ${PHARMACY.phone} and we'll see what we can do.`
+                  : elig === "expired"
+                    ? `This prescription has expired, so it can't be refilled even though refills were authorised. Your prescriber needs to write a new one — call us on ${PHARMACY.phone} and we'll chase it for you.`
+                    : elig === "discontinued"
+                      ? `This prescription was discontinued by the pharmacy or your prescriber, so it can't be refilled. If you think that's wrong, call us on ${PHARMACY.phone}.`
+                      : (rx.refillsRemaining <= 0 && isControlled) || elig === "controlled_not_refillable"
+                  ? `This is a controlled medication, so we have to speak to your prescriber before it can be refilled — that can't be done online. Please call us on ${PHARMACY.phone}.`
                   : rx.refillsRemaining > 0
                   ? "Requesting a refill sends it to our pharmacists. They'll prepare it and let you know when it's ready."
                   : rx.renewalRequestedAt
@@ -417,13 +435,7 @@ export default function PrescriptionDetail() {
                 onClick={onRefill}
                 disabled={!canRefill || refilling}
               >
-                {refilling
-                  ? "Requesting…"
-                  : pendingRefillRequest
-                    ? "Refill already requested"
-                    : rx.refillsRemaining > 0
-                      ? "Request refill"
-                      : "No refills left"}
+                {refilling ? "Requesting…" : pendingRefillRequest ? "Refill already requested" : refillLabel}
               </Button>
             </div>
           </Card>

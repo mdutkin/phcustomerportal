@@ -143,6 +143,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const err = e as ApiError;
       if (err.code === "controlled_substance") {
         pushToast(err.message);
+      } else if (err.code === "refill_too_early") {
+        pushToast("It's too early to refill this one — the date it opens up is on the prescription page.");
+      } else if (err.code === "prescription_expired" || err.code === "prescription_discontinued") {
+        pushToast(`This prescription can't be refilled any more. Call us on ${PHARMACY.phone} and we'll sort out a new one.`);
+      } else if (err.code === "controlled_not_refillable") {
+        pushToast(`This medication needs your prescriber's sign-off before we can refill it — call us on ${PHARMACY.phone}.`);
       } else if (err.code === "request_already_pending") {
         pushToast("You've already requested a refill for this prescription.");
       } else if (err.code === "no_refills_remaining") {

@@ -6,6 +6,7 @@
 // exactly the kind of drift a patient notices and we don't.
 
 import type { Prescription } from "../data";
+import { fmtDate, parseApiDate } from "./dates";
 
 /** ~6 months. A fill older than this is history, not current medication. */
 const CURRENT_WINDOW_DAYS = 180;
@@ -21,17 +22,47 @@ const CURRENT_WINDOW_DAYS = 180;
  */
 export function isCurrent(m: Prescription): boolean {
   if (m.dispensed === false || !m.lastFilledIso) return false;
-  const t = new Date(m.lastFilledIso).getTime();
-  if (Number.isNaN(t)) return false;
+  const t = parseApiDate(m.lastFilledIso)?.getTime();
+  if (t == null) return false;
   return Date.now() - t <= CURRENT_WINDOW_DAYS * 86_400_000;
 }
 
 export const selectCurrent = (all: Prescription[]) => all.filter(isCurrent);
 export const selectPast = (all: Prescription[]) => all.filter((m) => !isCurrent(m));
 
+/**
+ * Can a refill request be sent for this prescription TODAY?
+ *
+ * Refills remaining is necessary but not sufficient: PrimeRX applies its own
+ * eligibility (RefDueView), and the big one is "too early" — the store fills
+ * once 83% of the days' supply has elapsed, and insurers reject anything sooner.
+ * The PrimeRX client shows the pharmacist "N Days Early For Refill" for exactly
+ * this, so a request queued before then is work nobody can act on. Mirror the
+ * verdict rather than invent our own.
+ */
+export function canRequestRefill(m: Prescription): boolean {
+  if (m.refillsRemaining <= 0 || m.dispensed === false) return false;
+  switch (m.refillEligibility) {
+    case "too_early":
+    case "no_qty":
+    case "expired":
+    case "discontinued":
+    case "controlled_not_refillable":
+      return false;
+    default:
+      return true; // ok, filed, transferred, or not tracked by the pharmacy
+  }
+}
+
+/** "Sep 20" — when a too-early refill opens up; null when not applicable. */
+export function refillOpensLabel(m: Prescription): string | null {
+  if (m.refillEligibility !== "too_early" || !m.refillEligibleIso) return null;
+  return fmtDate(m.refillEligibleIso, { month: "short", day: "numeric" }, "") || null;
+}
+
 /** Current medications the patient can actually refill right now. */
 export const selectRefillable = (all: Prescription[]) =>
-  selectCurrent(all).filter((m) => m.refillsRemaining > 0);
+  selectCurrent(all).filter(canRequestRefill);
 
 /** Current medications with no refills left — these need a new prescription. */
 export const selectNeedsRenewal = (all: Prescription[]) =>
