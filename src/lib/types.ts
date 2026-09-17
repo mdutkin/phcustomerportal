@@ -99,6 +99,58 @@ export interface AdminUser {
   lastLoginAt: string | null;
 }
 
+export type WorklistDb = "340b" | "conventional";
+
+export interface WorklistRx {
+  db: WorklistDb;
+  patientno: number;
+  rxno: string;
+  drugName: string | null;
+  drugStrength: string | null;
+  deaClass: number;
+  lastFilledAt: string | null;
+  daysSupply: number | null;
+  refillsRemaining: number;
+  daysRemaining: number | null;
+  dueDate: string | null;
+  consentUntil: string | null;
+  handoff: "delivery" | "pickup";
+  inPrimeRxQueueSince: string | null;
+  portalRequestId: string | null;
+  portalRequestedAt: string | null;
+}
+
+export interface WorklistPerson {
+  key: string;
+  lastName: string | null;
+  firstName: string | null;
+  dob: string | null;
+  mobile: string | null;
+  phone: string | null;
+  languageNo: number | null;
+  records: Array<{ db: WorklistDb; patientno: number }>;
+  rxCount: number;
+  consentCount: number;
+  ranOutCount: number;
+  mostOverdueDays: number;
+  hasPortalRequest: boolean;
+  priority: number;
+  rx: WorklistRx[];
+}
+
+export interface Worklist {
+  generatedAt: string;
+  totals: {
+    people: number;
+    rx: number;
+    withConsent: number;
+    ranOut: number;
+    byDb: Record<string, { people: number; rx: number }>;
+  };
+  matched: number;
+  people: WorklistPerson[];
+}
+
 export type RefillEligibility =
   | "ok"
   | "too_early"

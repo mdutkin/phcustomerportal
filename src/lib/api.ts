@@ -2,7 +2,7 @@
 // Bearer header; the backend verifies it and lazily provisions the user row.
 
 import { auth } from "./firebase";
-import type { ApiRequest, ApiRx, ApiRxDetail, Me, StaffMe, AdminUser, UserRole } from "./types";
+import type { ApiRequest, ApiRx, ApiRxDetail, Me, StaffMe, AdminUser, UserRole, Worklist } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -60,6 +60,21 @@ async function json<T>(path: string, init: RequestInit = {}): Promise<T> {
 // ─── Staff / admin ─────────────────────────────────────────────────────────
 
 export const getStaffMe = () => json<StaffMe>("/staff/me");
+export interface WorklistQuery {
+  db?: "340b" | "conventional" | "both";
+  consent?: "any" | "yes" | "no";
+  ranOut?: "any" | "yes";
+  refresh?: boolean;
+}
+export const getWorklist = (q: WorklistQuery = {}) => {
+  const p = new URLSearchParams();
+  if (q.db) p.set("db", q.db);
+  if (q.consent) p.set("consent", q.consent);
+  if (q.ranOut) p.set("ranOut", q.ranOut);
+  if (q.refresh) p.set("refresh", "true");
+  const qs = p.toString();
+  return json<Worklist>(`/staff/worklist${qs ? `?${qs}` : ""}`);
+};
 export const listUsers = (role?: UserRole) =>
   json<{ items: AdminUser[] }>(`/admin/users${role ? `?role=${role}` : ""}`).then((r) => r.items);
 export const createStaffUser = (body: { email: string; displayName?: string; role: "pharmacist" | "admin" }) =>

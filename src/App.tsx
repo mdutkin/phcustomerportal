@@ -23,6 +23,7 @@ import StaffLogin from "@/screens/StaffLogin";
 import StaffShell from "@/staff/StaffShell";
 import Team from "@/staff/Team";
 import Placeholder from "@/staff/Placeholder";
+import Worklist from "@/staff/Worklist";
 
 function activeFromPath(path: string): RouteKey {
   if (path === "/" || path.startsWith("/dashboard")) return "Dashboard";
@@ -99,7 +100,7 @@ export default function App() {
       {/* Staff console — separate login, role-gated shell. */}
       <Route path="/staff/login" element={<StaffLogin />} />
       <Route path="/staff" element={<StaffShell />}>
-        <Route index element={<Placeholder title="Work list" note="Authorised & due refills across both databases — coming next." />} />
+        <Route index element={<Worklist />} />
         <Route path="requests" element={<Placeholder title="Requests" note="Patient-initiated refill and profile requests from the portal queue." />} />
         <Route path="team" element={<AdminOnly><Team /></AdminOnly>} />
       </Route>

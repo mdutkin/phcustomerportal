@@ -1200,3 +1200,26 @@ a { color: inherit; }
 .staff-table th, .staff-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--slate-100, #f1f5f9); vertical-align: middle; }
 .staff-table th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--fg-3); background: var(--slate-50, #f8fafc); }
 .staff-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.wl-stats { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; font-size: 14px; }
+.wl-stats b { font-size: 18px; }
+.wl-filters { display: flex; gap: 16px; align-items: end; margin: 8px 0 14px; font-size: 13px; color: var(--fg-3); }
+.wl-filters label { display: flex; flex-direction: column; gap: 4px; }
+.wl-filters .input { min-width: 180px; }
+.wl-person { cursor: pointer; }
+.wl-person:hover td { background: var(--slate-50, #f8fafc); }
+.wl-person.is-requested td:first-child { box-shadow: inset 3px 0 0 var(--brand-primary); }
+.wl-name { font-weight: 600; }
+.wl-sub { font-weight: 400; font-size: 12px; margin-top: 2px; }
+.wl-tel { font-weight: 600; text-decoration: none; color: var(--brand-primary); white-space: nowrap; }
+.wl-overdue { color: #b42318; font-weight: 600; }
+.wl-due { color: #b54708; font-weight: 600; }
+.wl-detail td { background: var(--slate-50, #f8fafc); padding: 8px 12px 8px 24px; }
+.wl-rx { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 6px 0; font-size: 13px; border-bottom: 1px dashed var(--slate-200, #e2e8f0); }
+.wl-rx:last-child { border-bottom: 0; }
+.wl-drug { font-weight: 600; min-width: 220px; }
+.wl-tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; background: var(--slate-100, #f1f5f9); color: var(--fg-2); white-space: nowrap; }
+.wl-tag-ok { background: #ecfdf3; color: #067647; }
+.wl-tag-warn { background: #fffaeb; color: #b54708; }
+.wl-tag-info { background: #eff8ff; color: #175cd3; }
+.wl-db-340b { background: #eef4ff; color: #3538cd; margin: 0; }
+.wl-db-conventional { background: var(--slate-100, #f1f5f9); margin: 0; }
