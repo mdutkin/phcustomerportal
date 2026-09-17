@@ -6,11 +6,13 @@
 
 import {
   RecaptchaVerifier,
+  signInWithEmailAndPassword,
   signInWithPhoneNumber,
   signOut,
   type ConfirmationResult,
 } from "firebase/auth";
 import { auth } from "./firebase";
+import type { UserRole } from "./types";
 
 let verifier: RecaptchaVerifier | null = null;
 
@@ -44,6 +46,24 @@ export async function confirmSmsCode(
   code: string,
 ): Promise<void> {
   await confirmation.confirm(code);
+}
+
+/**
+ * Staff sign-in. Email+password is deliberately NOT offered on the patient
+ * login page: it carries no verified phone, so it can never claim a patient
+ * record. Staff accounts are created by an admin and carry a `role` claim.
+ */
+export async function signInStaff(email: string, password: string): Promise<void> {
+  await signInWithEmailAndPassword(auth, email.trim(), password);
+}
+
+/** Role from the ID token's custom claims; "patient" when none. */
+export async function currentRole(): Promise<UserRole> {
+  const u = auth.currentUser;
+  if (!u) return "patient";
+  const { claims } = await u.getIdTokenResult();
+  const r = claims.role;
+  return r === "admin" || r === "pharmacist" ? r : "patient";
 }
 
 export async function signOutUser(): Promise<void> {

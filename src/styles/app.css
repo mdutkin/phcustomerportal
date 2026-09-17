@@ -1181,3 +1181,22 @@ a { color: inherit; }
   .topnav .tab .lu { width: 14px; height: 14px; }
   .page { padding: 24px 20px 80px; }
 }
+
+/* ─── Staff console ───────────────────────────────────────────────────── */
+.staff-shell { min-height: 100vh; background: var(--slate-50, #f8fafc); }
+.staff-top { display: flex; align-items: center; gap: 24px; padding: 10px 20px; background: #fff; border-bottom: 1px solid var(--slate-200, #e2e8f0); }
+.staff-brand { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.staff-badge { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; padding: 2px 6px; border-radius: 4px; background: var(--slate-100, #f1f5f9); color: var(--fg-3); margin-left: 6px; }
+.staff-nav { display: flex; gap: 4px; flex: 1; }
+.staff-nav-link { padding: 6px 10px; border-radius: 6px; color: var(--fg-2); text-decoration: none; font-size: 14px; }
+.staff-nav-link.is-active { background: var(--slate-100, #f1f5f9); color: var(--fg-1); font-weight: 600; }
+.staff-user { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.staff-main { padding: 20px; max-width: 1400px; }
+.staff-h1 { font-size: 20px; font-weight: 700; margin: 0 0 6px; }
+.staff-inline-form { display: grid; grid-template-columns: 2fr 1fr auto; gap: 12px; align-items: end; margin: 16px 0; max-width: 720px; }
+.staff-callout { background: #fffbeb; border: 1px solid #fde68a; padding: 12px 14px; border-radius: 8px; margin: 12px 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+.staff-secret { font-family: ui-monospace, monospace; font-size: 15px; padding: 4px 8px; background: #fff; border: 1px solid #fde68a; border-radius: 6px; user-select: all; }
+.staff-table { width: 100%; border-collapse: collapse; font-size: 14px; background: #fff; border: 1px solid var(--slate-200, #e2e8f0); border-radius: 8px; overflow: hidden; }
+.staff-table th, .staff-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--slate-100, #f1f5f9); vertical-align: middle; }
+.staff-table th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--fg-3); background: var(--slate-50, #f8fafc); }
+.staff-actions { display: flex; gap: 6px; justify-content: flex-end; }

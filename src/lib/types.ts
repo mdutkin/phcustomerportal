@@ -80,6 +80,25 @@ export interface ApiRx {
   is340b: boolean;
 }
 
+export type UserRole = "patient" | "pharmacist" | "admin";
+
+export interface StaffMe {
+  id: string;
+  email: string | null;
+  role: UserRole;
+  mfa: boolean;
+}
+
+export interface AdminUser {
+  id: string;
+  firebaseUid: string;
+  email: string | null;
+  phoneE164: string | null;
+  role: UserRole;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
 export type RefillEligibility =
   | "ok"
   | "too_early"

@@ -2,7 +2,7 @@
 // Bearer header; the backend verifies it and lazily provisions the user row.
 
 import { auth } from "./firebase";
-import type { ApiRequest, ApiRx, ApiRxDetail, Me } from "./types";
+import type { ApiRequest, ApiRx, ApiRxDetail, Me, StaffMe, AdminUser, UserRole } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -56,6 +56,22 @@ async function json<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
 }
+
+// ─── Staff / admin ─────────────────────────────────────────────────────────
+
+export const getStaffMe = () => json<StaffMe>("/staff/me");
+export const listUsers = (role?: UserRole) =>
+  json<{ items: AdminUser[] }>(`/admin/users${role ? `?role=${role}` : ""}`).then((r) => r.items);
+export const createStaffUser = (body: { email: string; displayName?: string; role: "pharmacist" | "admin" }) =>
+  json<{ firebaseUid: string; email: string; role: UserRole; temporaryPassword: string | null }>("/admin/users", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+export const setUserRole = (firebaseUid: string, role: UserRole) =>
+  json<{ firebaseUid: string; role: UserRole }>(`/admin/users/${encodeURIComponent(firebaseUid)}/role`, {
+    method: "PUT",
+    body: JSON.stringify({ role }),
+  });
 
 // ─── Identity ─────────────────────────────────────────────────────────────
 

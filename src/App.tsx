@@ -19,6 +19,10 @@ import PrescriptionDetail from "@/screens/PrescriptionDetail";
 import DrugInfo from "@/screens/DrugInfo";
 import Messages from "@/screens/Messages";
 import Profile from "@/screens/Profile";
+import StaffLogin from "@/screens/StaffLogin";
+import StaffShell from "@/staff/StaffShell";
+import Team from "@/staff/Team";
+import Placeholder from "@/staff/Placeholder";
 
 function activeFromPath(path: string): RouteKey {
   if (path === "/" || path.startsWith("/dashboard")) return "Dashboard";
@@ -33,17 +37,23 @@ function activeFromPath(path: string): RouteKey {
 // Guards the claim screen itself: you must be signed in to claim, and if you're
 // already linked there's nothing to do here.
 function ClaimGate() {
-  const { authed, authLoading, me, meLoading } = useApp();
+  const { authed, authLoading, isStaff, me, meLoading } = useApp();
   if (authLoading || (authed && meLoading && !me)) {
     return <div className="auth-loading">Loading…</div>;
   }
   if (!authed) return <Navigate to="/login" replace />;
+  if (isStaff) return <Navigate to="/staff" replace />;
   if (me?.link) return <Navigate to="/" replace />;
   return <Claim />;
 }
 
+function AdminOnly({ children }: { children: React.ReactElement }) {
+  const { role } = useApp();
+  return role === "admin" ? children : <Navigate to="/staff" replace />;
+}
+
 function ProtectedShell() {
-  const { authed, authLoading, me, meLoading, patient, unreadMsg, toasts } = useApp();
+  const { authed, authLoading, isStaff, me, meLoading, patient, unreadMsg, toasts } = useApp();
   const loc = useLocation();
 
   // Wait for Firebase to restore the session before deciding to redirect.
@@ -52,6 +62,10 @@ function ProtectedShell() {
   }
   if (!authed) {
     return <Navigate to="/login" replace />;
+  }
+  // Staff have no patient record to show — their world is /staff.
+  if (isStaff) {
+    return <Navigate to="/staff" replace />;
   }
   // Signed in, but we don't know their PrimeRX link yet.
   if (meLoading && !me) {
@@ -81,6 +95,14 @@ export default function App() {
       {/* Signed in but not yet linked to a patient record. Outside
           ProtectedShell — that shell requires a link. */}
       <Route path="/claim" element={<ClaimGate />} />
+
+      {/* Staff console — separate login, role-gated shell. */}
+      <Route path="/staff/login" element={<StaffLogin />} />
+      <Route path="/staff" element={<StaffShell />}>
+        <Route index element={<Placeholder title="Work list" note="Authorised & due refills across both databases — coming next." />} />
+        <Route path="requests" element={<Placeholder title="Requests" note="Patient-initiated refill and profile requests from the portal queue." />} />
+        <Route path="team" element={<AdminOnly><Team /></AdminOnly>} />
+      </Route>
 
       <Route element={<ProtectedShell />}>
         <Route path="/" element={<DashboardA />} />

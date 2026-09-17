@@ -11,16 +11,19 @@ import {
 } from "./data";
 import type { Toast } from "./components/ui";
 import { auth } from "./lib/firebase";
-import { signOutUser } from "./lib/auth";
+import { currentRole, signOutUser } from "./lib/auth";
 import { PHARMACY } from "./lib/pharmacy";
 import { ApiError, getMe, listPrescriptions, requestRefill } from "./lib/api";
 import { apiMeToPatient, apiRxToPrescription } from "./lib/mappers";
-import type { Me } from "./lib/types";
+import type { Me, UserRole } from "./lib/types";
 
 interface AppCtx {
   authed: boolean;
   authLoading: boolean;
   firebaseUser: User | null;
+  /** From the ID token's custom claim. Staff never enter the patient flow. */
+  role: UserRole;
+  isStaff: boolean;
   signOut: () => Promise<void>;
   /** Backend identity: me.link === null → not yet linked to a PrimeRX patient. */
   me: Me | null;
@@ -43,15 +46,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // until the first onAuthStateChanged fires (so the router doesn't bounce to
   // /login before Firebase restores the session).
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [role, setRole] = useState<UserRole>("patient");
   const [authLoading, setAuthLoading] = useState(true);
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setFirebaseUser(u);
-      setAuthLoading(false);
+      // Resolve the role before declaring auth settled, so the router never
+      // briefly treats a pharmacist as an unlinked patient (→ /claim).
+      void currentRole().then((r) => {
+        setRole(u ? r : "patient");
+        setAuthLoading(false);
+      });
     });
     return unsub;
   }, []);
   const authed = firebaseUser !== null;
+  const isStaff = role !== "patient";
 
   // Backend identity. Fetched once we're authed; `link === null` means the user
   // hasn't claimed their PrimeRX patient record yet and must verify first.
@@ -75,13 +85,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!authed) {
+    if (!authed || isStaff) {
+      // Staff have no patient identity; /me is a patient concept.
       setMe(null);
       return;
     }
     void refreshMe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authed, authLoading]);
+  }, [authed, authLoading, isStaff]);
 
   // Real patient profile derived from /me. The mock is only a pre-load fallback
   // to satisfy the non-null type — the shell renders only once linked, so in
@@ -163,6 +174,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     authed,
     authLoading,
     firebaseUser,
+    role,
+    isStaff,
     signOut: signOutUser,
     me,
     meLoading,
