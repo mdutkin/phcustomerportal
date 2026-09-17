@@ -1227,3 +1227,9 @@ a { color: inherit; }
 .wl-progress { background: #eff8ff; border-color: #b2ddff; color: #175cd3; }
 .wl-spinner { width: 14px; height: 14px; border: 2px solid #b2ddff; border-top-color: #175cd3; border-radius: 50%; display: inline-block; animation: wl-spin .8s linear infinite; }
 @keyframes wl-spin { to { transform: rotate(360deg); } }
+.wl-tag-danger { background: #fef3f2; color: #b42318; }
+.rq-note { font-size: 13px; color: var(--fg-2); margin-top: 4px; font-style: italic; }
+.rq-actions { flex-wrap: wrap; max-width: 420px; }
+.rq-input { height: 30px; font-size: 13px; min-width: 140px; }
+.rq-row.rq-pending td:first-child { box-shadow: inset 3px 0 0 #f79009; }
+.rq-row.rq-in_progress td:first-child { box-shadow: inset 3px 0 0 #2e90fa; }

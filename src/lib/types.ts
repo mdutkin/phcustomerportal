@@ -151,6 +151,27 @@ export interface Worklist {
   people: WorklistPerson[];
 }
 
+export type CommandType = "refill_request" | "update_details" | "update_delivery";
+export type CommandStatus = "pending" | "in_progress" | "done" | "rejected" | "canceled" | "failed";
+
+export interface StaffCommand {
+  id: string;
+  type: CommandType;
+  status: CommandStatus;
+  dbKind: WorklistDb;
+  patientno: number;
+  patient: { lastName: string | null; firstName: string | null; dob: string | null; mobile: string | null } | null;
+  requestedBy: { userId: string; phoneE164: string | null; email: string | null };
+  payload: Record<string, unknown>;
+  patientNote: string | null;
+  staffNote: string | null;
+  requestedAt: string;
+  claimedBy: string | null;
+  claimedAt: string | null;
+  completedBy: string | null;
+  completedAt: string | null;
+}
+
 export type RefillEligibility =
   | "ok"
   | "too_early"

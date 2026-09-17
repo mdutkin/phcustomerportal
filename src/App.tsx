@@ -22,8 +22,8 @@ import Profile from "@/screens/Profile";
 import StaffLogin from "@/screens/StaffLogin";
 import StaffShell from "@/staff/StaffShell";
 import Team from "@/staff/Team";
-import Placeholder from "@/staff/Placeholder";
 import Worklist from "@/staff/Worklist";
+import Requests from "@/staff/Requests";
 
 function activeFromPath(path: string): RouteKey {
   if (path === "/" || path.startsWith("/dashboard")) return "Dashboard";
@@ -101,7 +101,7 @@ export default function App() {
       <Route path="/staff/login" element={<StaffLogin />} />
       <Route path="/staff" element={<StaffShell />}>
         <Route index element={<Worklist />} />
-        <Route path="requests" element={<Placeholder title="Requests" note="Patient-initiated refill and profile requests from the portal queue." />} />
+        <Route path="requests" element={<Requests />} />
         <Route path="team" element={<AdminOnly><Team /></AdminOnly>} />
       </Route>
 

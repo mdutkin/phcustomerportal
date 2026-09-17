@@ -2,7 +2,7 @@
 // Bearer header; the backend verifies it and lazily provisions the user row.
 
 import { auth } from "./firebase";
-import type { ApiRequest, ApiRx, ApiRxDetail, Me, StaffMe, AdminUser, UserRole, Worklist } from "./types";
+import type { ApiRequest, ApiRx, ApiRxDetail, Me, StaffMe, AdminUser, UserRole, Worklist, StaffCommand, CommandStatus } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
@@ -60,6 +60,13 @@ async function json<T>(path: string, init: RequestInit = {}): Promise<T> {
 // ─── Staff / admin ─────────────────────────────────────────────────────────
 
 export const getStaffMe = () => json<StaffMe>("/staff/me");
+export const listStaffRequests = (scope: "open" | "closed" | "all" = "open") =>
+  json<{ items: StaffCommand[] }>(`/staff/requests?scope=${scope}`).then((r) => r.items);
+export const transitionRequest = (id: string, action: "claim" | "release" | "done" | "reject", note?: string) =>
+  json<{ id: string; status: CommandStatus }>(`/staff/requests/${id}/${action}`, {
+    method: "POST",
+    body: JSON.stringify(note ? { note } : {}),
+  });
 export interface WorklistQuery {
   db?: "340b" | "conventional" | "both";
   consent?: "any" | "yes" | "no";
