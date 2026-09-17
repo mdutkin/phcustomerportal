@@ -1223,3 +1223,7 @@ a { color: inherit; }
 .wl-tag-info { background: #eff8ff; color: #175cd3; }
 .wl-db-340b { background: #eef4ff; color: #3538cd; margin: 0; }
 .wl-db-conventional { background: var(--slate-100, #f1f5f9); margin: 0; }
+.wl-table.is-stale { opacity: .55; pointer-events: none; transition: opacity .2s; }
+.wl-progress { background: #eff8ff; border-color: #b2ddff; color: #175cd3; }
+.wl-spinner { width: 14px; height: 14px; border: 2px solid #b2ddff; border-top-color: #175cd3; border-radius: 50%; display: inline-block; animation: wl-spin .8s linear infinite; }
+@keyframes wl-spin { to { transform: rotate(360deg); } }

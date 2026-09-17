@@ -90,14 +90,24 @@ export default function Worklist() {
   const [data, setData] = useState<WorklistData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [refreshing, setRefreshing] = useState(false);
   const load = useCallback(async (refresh = false) => {
     setLoading(true);
+    if (refresh) setRefreshing(true);
     try {
-      setData(await getWorklist({ ...q, refresh }));
+      const next = await getWorklist({ ...q, refresh });
+      setData(next);
+      if (refresh) {
+        const b = next.totals.byDb;
+        toast.current(
+          `Re-read both databases: 340B ${b["340b"]?.people ?? 0} people, Conventional ${b["conventional"]?.people ?? 0}.`,
+        );
+      }
     } catch (e) {
       toast.current((e as Error).message || "Couldn't load the work list.");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [q]);
   useEffect(() => { void load(); }, [load]);
@@ -113,7 +123,9 @@ export default function Worklist() {
             {data ? ` Snapshot ${new Date(data.generatedAt).toLocaleTimeString()}.` : ""}
           </p>
         </div>
-        <Button variant="secondary" size="sm" onClick={() => void load(true)} disabled={loading}>{loading ? "Loading…" : "Refresh"}</Button>
+        <Button variant="secondary" size="sm" leadingIcon="refresh-cw" onClick={() => void load(true)} disabled={loading}>
+          {refreshing ? "Re-reading PrimeRX…" : loading ? "Loading…" : "Refresh from PrimeRX"}
+        </Button>
       </div>
 
       {t ? (
@@ -149,7 +161,13 @@ export default function Worklist() {
         {data ? <span className="muted">{data.matched} people match</span> : null}
       </div>
 
-      <table className="staff-table wl-table">
+      {refreshing ? (
+        <div className="staff-callout wl-progress">
+          <span className="wl-spinner" /> Re-reading both PrimeRX databases — about 10 seconds. The list below is the previous snapshot.
+        </div>
+      ) : null}
+
+      <table className={`staff-table wl-table${loading && data ? " is-stale" : ""}`}>
         <thead>
           <tr><th>Patient</th><th>Phone</th><th>Rx due</th><th>Authorised</th><th>Supply</th><th /></tr>
         </thead>
